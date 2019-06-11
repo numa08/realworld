@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "570463479454",
+    "firebase_url": "https://numa-realworld.firebaseio.com",
+    "project_id": "numa-realworld",
+    "storage_bucket": "numa-realworld.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:570463479454:android:3682f07bebb4869c",
+        "android_client_info": {
+          "package_name": "net.numa08.realworld"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "570463479454-gprm3qnd3m9cqceau44qgi00nrh29vid.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-ii5TXC_5HBvLiIb68eRmW-I5PFsydys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "570463479454-gprm3qnd3m9cqceau44qgi00nrh29vid.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "570463479454-19nhrnnh3mohf5jga9nbdshqpo30oeei.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.numa08.realworld"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
