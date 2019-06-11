@@ -19,7 +19,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^0.2.5
+  firebase_core: ^0.4.0
   equatable: ^0.2.0
   bloc: ^0.14.0
   flutter_bloc: ^0.14.0
