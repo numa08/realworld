@@ -1,49 +1,32 @@
-import 'dart:async';
-
-import 'package:firebase_core/firebase_core.dart';
+import 'package:app/bloc/bloc.dart';
+import 'package:app/repositories/repositories.dart';
+import 'package:app/widgets/widgets.dart';
+import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
+class SimpleBlocDelegate extends BlocDelegate {
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    print(transition);
+  }
+}
+
+void main() {
+  BlocSupervisor.delegate = SimpleBlocDelegate();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
-  final String name = 'numa-realworld';
-  Future<void> _configure() async {
-    final FirebaseApp app = FirebaseApp.instance;
-    assert(app != null);
-    print('Configured $app');
-  }
-
-  Future<void> _allApps() async {
-    final List<FirebaseApp> apps = await FirebaseApp.allApps();
-    print('Currently configured apps: $apps');
-  }
-
-  Future<void> _options() async {
-    final FirebaseApp app = FirebaseApp.instance;
-    final FirebaseOptions options = await app?.options;
-    print('Current options for app $name: $options');
-  }
-
   @override
   Widget build(BuildContext context) {
+    var firestore = Firestore.instance;
+    var articleRepository = ArticleRepository(firestore: firestore);
+    var articleBloc = ArticleBloc(articleRepository: articleRepository);
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Firebase Core example app'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              RaisedButton(
-                  onPressed: _configure, child: const Text('initialize')),
-              RaisedButton(onPressed: _allApps, child: const Text('allApps')),
-              RaisedButton(onPressed: _options, child: const Text('options')),
-            ],
-          ),
-        ),
+      home: Articles(
+        articleBloc: articleBloc,
       ),
     );
   }
