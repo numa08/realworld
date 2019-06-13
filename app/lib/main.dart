@@ -1,4 +1,3 @@
-import 'package:app/repositories/repositories.dart';
 import 'package:app/widgets/widgets.dart';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -35,13 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     var firestore = Firestore.instance;
     var firebaseAuth = FirebaseAuth.instance;
-    var articleRepository = ArticleRepository(firestore: firestore);
-    var accountRepository =
-        AccountRepository(firebaseAuth: firebaseAuth, firestore: firestore);
     return MaterialApp(
-        home: Top(
-      articleRepository: articleRepository,
-      accountRepository: accountRepository,
-    ));
+        home: TopScreen(firebaseAuth: firebaseAuth, firestore: firestore));
   }
 }

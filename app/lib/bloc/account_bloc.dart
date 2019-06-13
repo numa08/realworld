@@ -58,6 +58,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
   @override
   void dispose() {
+    accountRepository.dispose();
     super.dispose();
   }
 }

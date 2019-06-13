@@ -22,17 +22,12 @@ class AccountRepository {
       _userStream.add(null);
       return;
     }
-    QuerySnapshot userQuery;
-    try {
-      userQuery = await firestore
-          .collection('users')
-          .where('token', isEqualTo: currentUser.uid)
-          .snapshots()
-          .single
-          .timeout(const Duration(seconds: 3));
-    } catch (_) {
-      userQuery = null;
-    }
+
+    QuerySnapshot userQuery = await firestore
+        .collection('users')
+        .where('token', isEqualTo: currentUser.uid)
+        .getDocuments();
+
     if (userQuery == null) {
       _userStream.add(null);
       return;
