@@ -1,6 +1,5 @@
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
-import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
@@ -17,24 +16,12 @@ abstract class ArticleState extends Equatable {
 
 class ArticleNotLoaded extends ArticleState {}
 
-class ArticleEmpty extends ArticleState {}
-
 class ArticleLoading extends ArticleState {}
 
-class ArticleLoaded extends ArticleState {
-  final List<Article> articles;
+class ArticleStream extends ArticleState {
+  final Stream<List<Article>> articleStream;
 
-  ArticleLoaded({@required this.articles})
-      : assert(articles != null),
-        super([articles]);
-}
-
-class ArticleLoadError extends ArticleState {
-  final String error;
-
-  ArticleLoadError({@required this.error})
-      : assert(error != null),
-        super([error]);
+  ArticleStream({@required this.articleStream}) : assert(articleStream != null);
 }
 
 class ArticleBloc extends Bloc<ArticleEvent, ArticleState> {
@@ -47,21 +34,11 @@ class ArticleBloc extends Bloc<ArticleEvent, ArticleState> {
   ArticleState get initialState => ArticleNotLoaded();
 
   @override
-  Stream<ArticleState> mapEventToState(ArticleEvent event) {
+  Stream<ArticleState> mapEventToState(ArticleEvent event) async* {
     if (event is AllArticles) {
-      var articles = articleRepository.articles;
-      var state = articles.map((data) {
-        if (data.isEmpty) {
-          return ArticleEmpty();
-        } else {
-          return ArticleLoaded(articles: data);
-        }
-      });
-      var loading = Stream.fromIterable([ArticleLoading()]);
-      var stream = StreamGroup.merge([loading, state]);
+      yield ArticleLoading();
       articleRepository.fetch();
-      return stream;
+      yield ArticleStream(articleStream: articleRepository.articles);
     }
-    return Stream.empty();
   }
 }

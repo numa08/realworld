@@ -1,4 +1,5 @@
 import 'package:app/bloc/bloc.dart';
+import 'package:app/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -30,6 +31,7 @@ class _ArticleListState extends State<ArticleList> {
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<ArticleBloc>(context);
     assert(bloc != null);
+    StreamBuilder<List<Article>> articleStream;
     return BlocBuilder(
       bloc: bloc,
       builder: (BuildContext context, ArticleState state) {
@@ -44,15 +46,31 @@ class _ArticleListState extends State<ArticleList> {
             child: CircularProgressIndicator(),
           );
         }
-        if (state is ArticleEmpty) {
-          return Center(
-            child: Text('Welcome to conduit'),
-          );
-        }
-        if (state is ArticleLoaded) {
-          return Center(
-            child: Text('We have articles!'),
-          );
+        if (state is ArticleStream) {
+          if (articleStream == null) {
+            articleStream = StreamBuilder(
+              stream: state.articleStream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Article>> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return CircularProgressIndicator();
+                  default:
+                    var article = snapshot.data;
+                    if (article.isEmpty) {
+                      return Center(
+                        child: Text('Welcome to conduit'),
+                      );
+                    } else {
+                      return Center(
+                        child: Text('We have articles!'),
+                      );
+                    }
+                }
+              },
+            );
+          }
+          return articleStream;
         }
       },
     );
