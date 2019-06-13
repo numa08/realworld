@@ -16,12 +16,7 @@ class Articles extends StatelessWidget {
             bloc: articleBloc,
           )
         ],
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('conduit'),
-          ),
-          body: ArticleList(),
-        ),
+        child: ArticleList(),
       );
 }
 
