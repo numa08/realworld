@@ -22,7 +22,7 @@ class AccountNotLoaded extends AccountState {}
 
 class AccountLoading extends AccountState {}
 
-// Bloc が通知する Stream は widget の更新が完了したら終了する必要がある。
+// Bloc が通知する Stream は widget の更新が完了したら\終了する必要がある。
 // そのため firestore が通知する stream をそのまま State に変換をしても、
 // ソースとなる Stream が無限なので、 Bloc のライフサイクルが止まってしまう。
 // そこで、 State の中で Stream を通知することで Widget では StreamBuilder

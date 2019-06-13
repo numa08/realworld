@@ -1,4 +1,3 @@
-import 'package:app/bloc/bloc.dart';
 import 'package:app/repositories/repositories.dart';
 import 'package:app/widgets/widgets.dart';
 import 'package:bloc/bloc.dart';
@@ -39,18 +38,10 @@ class MyApp extends StatelessWidget {
     var articleRepository = ArticleRepository(firestore: firestore);
     var accountRepository =
         AccountRepository(firebaseAuth: firebaseAuth, firestore: firestore);
-    var articleBloc = ArticleBloc(articleRepository: articleRepository);
-    var accountBloc = AccountBloc(accountRepository: accountRepository);
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('conduit'),
-        ),
-        body: Articles(
-          articleBloc: articleBloc,
-        ),
-        drawer: TopDrawer(accountBloc: accountBloc),
-      ),
-    );
+        home: Top(
+      articleRepository: articleRepository,
+      accountRepository: accountRepository,
+    ));
   }
 }
