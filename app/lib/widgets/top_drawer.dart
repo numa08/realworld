@@ -18,7 +18,7 @@ class TopDrawer extends StatelessWidget {
           )
         ],
         child: Drawer(
-          child: DrawerAccountView(),
+          child: ListView(children: [DrawerAccountView()]),
         ),
       );
 }
@@ -42,10 +42,14 @@ class _DrawerAccountViewState extends State<DrawerAccountView> {
       builder: (BuildContext context, AccountState state) {
         if (state is AccountNotLoaded) {
           bloc.dispatch(FetchAccount());
-          return CircularProgressIndicator();
+          return DrawerHeader(
+            child: CircularProgressIndicator(),
+          );
         }
         if (state is AccountLoading) {
-          return CircularProgressIndicator();
+          return DrawerHeader(
+            child: CircularProgressIndicator(),
+          );
         }
         if (state is AccountStream) {
           if (userWidget == null) {
@@ -54,16 +58,35 @@ class _DrawerAccountViewState extends State<DrawerAccountView> {
               builder: (BuildContext context, AsyncSnapshot<User> snapShot) {
                 switch (snapShot.connectionState) {
                   case ConnectionState.waiting:
-                    return CircularProgressIndicator();
+                    return DrawerHeader(
+                      child: CircularProgressIndicator(),
+                    );
                   default:
                     if (snapShot.data == null) {
                       bloc.dispatch(LoginAnonymousAccount());
-                      return Center(
-                        child: Text('no account'),
+                      return DrawerHeader(
+                        child: CircularProgressIndicator(),
                       );
                     } else {
-                      return Center(
-                        child: Text('has account ${snapShot.data.token}'),
+                      return DrawerHeader(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              child: Text(
+                                'G',
+                                style: TextStyle(fontSize: 28),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Text(
+                              snapShot.data.username,
+                              style: TextStyle(fontSize: 16),
+                            )
+                          ],
+                        ),
                       );
                     }
                 }
