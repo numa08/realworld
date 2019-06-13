@@ -30,7 +30,7 @@ class AccountRepository {
           .snapshots()
           .single
           .timeout(const Duration(seconds: 3));
-    } on TimeoutException catch (_) {
+    } catch (_) {
       userQuery = null;
     }
     if (userQuery == null) {
