@@ -66,7 +66,6 @@ class _HomeState extends State<_Home> {
 
   @override
   Widget build(BuildContext context) {
-    StreamBuilder<User> loginWithAnonymous;
     return BlocBuilder(
         bloc: _accountBloc,
         builder: (context, accountState) {
@@ -75,21 +74,18 @@ class _HomeState extends State<_Home> {
             return Center(child: CircularProgressIndicator());
           }
           if (accountState is AccountStream) {
-            if (loginWithAnonymous == null) {
-              loginWithAnonymous = StreamBuilder(
-                  stream: accountState.userStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.active) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.data == null) {
-                      _accountBloc.dispatch(LoginAnonymousAccount());
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    return Text('login with ${snapshot.data.username}');
-                  });
-            }
-            return loginWithAnonymous;
+            return StreamBuilder(
+                stream: accountState.accountStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.active) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.data == null) {
+                    _accountBloc.dispatch(LoginAnonymousAccount());
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  return Text('login with ${snapshot.data.username}');
+                });
           }
         });
   }
@@ -138,7 +134,7 @@ class _DrawerHeaderState extends State<_DrawerHeader> {
         }
         if (accountState is AccountStream) {
           return StreamBuilder(
-            stream: accountState.userStream,
+            stream: accountState.accountStream,
             builder: (context, snapshot) {
               if (snapshot.data == null) {
                 return Builder(builder: _placeholderDrawerHeader);
@@ -170,15 +166,38 @@ WidgetBuilder _placeholderDrawerHeader = (context) => Container(
       ])),
     );
 
-WidgetBuilder _accountDrawerHeader(User user) => (context) => Container(
+WidgetBuilder _accountDrawerHeader(Account account) => (context) => Container(
       height: 64,
       child: DrawerHeader(
           child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Builder(builder: _accountAvatarImage(user.image, user.username)),
-          Center(child: Text(user.username))
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Builder(
+                  builder:
+                      _accountAvatarImage(account.image, account.username)),
+              Center(child: Text(account.username)),
+            ],
+          ),
+          Builder(
+            builder: (context) {
+              if (account.isAnonymous) {
+                return FlatButton(
+                  onPressed: () => {},
+                  child: Text('Sign in/ Sign up'),
+                );
+              } else {
+                return Container(
+                  width: 0,
+                  height: 0,
+                );
+              }
+            },
+          )
         ],
       )),
     );

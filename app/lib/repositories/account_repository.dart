@@ -13,13 +13,17 @@ class AccountRepository {
       : assert(firebaseAuth != null),
         assert(firestore != null);
 
-  final StreamController<User> _userStream = StreamController();
-  Stream<User> get user => _userStream.stream;
+  final StreamController<Account> _accountStream = StreamController();
+  Stream<Account> get account => _accountStream.stream;
 
   void fetch() async {
     var currentUser = await firebaseAuth.currentUser();
     if (currentUser == null) {
-      _userStream.add(null);
+      _accountStream.add(null);
+      return;
+    }
+    if (currentUser.isAnonymous) {
+      _accountStream.add(AnonymousUser(currentUser.uid));
       return;
     }
 
@@ -29,25 +33,24 @@ class AccountRepository {
         .getDocuments();
 
     if (userQuery == null) {
-      _userStream.add(null);
+      _accountStream.add(null);
       return;
     }
     var userDocuments = userQuery.documents;
     if (userDocuments == null || userDocuments.isEmpty) {
-      _userStream.add(null);
+      _accountStream.add(null);
       return;
     }
-    userDocuments.map((d) => User.fromJson(d.data)).forEach(_userStream.add);
+    userDocuments.map((d) => User.fromJson(d.data)).forEach(_accountStream.add);
   }
 
   void signInAnonymously() async {
     var firebaseUser = await firebaseAuth.signInAnonymously();
-    var user = User(null, firebaseUser.uid, "guest", "guest", null);
-    await firestore.collection('users').add(user.toJson());
-    _userStream.add(user);
+    var account = AnonymousUser(firebaseUser.uid);
+    _accountStream.add(account);
   }
 
   void dispose() {
-    _userStream.close();
+    _accountStream.close();
   }
 }

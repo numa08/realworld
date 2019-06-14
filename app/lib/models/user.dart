@@ -1,10 +1,11 @@
+import 'package:app/models/models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'user.g.dart';
 
 @JsonSerializable()
-class User extends Equatable {
+class User extends Equatable with Account {
   final String email;
   final String token;
   final String username;
@@ -17,4 +18,7 @@ class User extends Equatable {
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
+
+  @override
+  bool get isAnonymous => false;
 }
