@@ -2,21 +2,10 @@ import 'package:app/bloc/bloc.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
 import 'package:app/widgets/widgets.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopScreen extends StatelessWidget {
-  final FirebaseAuth firebaseAuth;
-  final Firestore firestore;
-
-  const TopScreen(
-      {Key key, @required this.firebaseAuth, @required this.firestore})
-      : assert(firebaseAuth != null),
-        assert(firestore != null),
-        super(key: key);
-
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
@@ -24,26 +13,16 @@ class TopScreen extends StatelessWidget {
         ),
         drawer: Drawer(
           child: ListView(
-            children: [
-              _DrawerHeader(firebaseAuth: firebaseAuth, firestore: firestore)
-            ],
+            children: [_DrawerHeader()],
           ),
         ),
         body: Center(
-          child: _Home(firebaseAuth: firebaseAuth, firestore: firestore),
+          child: _Home(),
         ),
       );
 }
 
 class _Home extends StatefulWidget {
-  final FirebaseAuth firebaseAuth;
-  final Firestore firestore;
-
-  const _Home({Key key, @required this.firebaseAuth, @required this.firestore})
-      : assert(firebaseAuth != null),
-        assert(firestore != null),
-        super(key: key);
-
   @override
   State<StatefulWidget> createState() => _HomeState();
 }
@@ -54,8 +33,7 @@ class _HomeState extends State<_Home> {
   @override
   void initState() {
     super.initState();
-    var repository = AccountRepository(
-        firebaseAuth: widget.firebaseAuth, firestore: widget.firestore);
+    var repository = AccountRepository();
     _accountBloc = AccountBloc(accountRepository: repository);
   }
 
@@ -93,15 +71,6 @@ class _HomeState extends State<_Home> {
 }
 
 class _DrawerHeader extends StatefulWidget {
-  final FirebaseAuth firebaseAuth;
-  final Firestore firestore;
-
-  const _DrawerHeader(
-      {Key key, @required this.firebaseAuth, @required this.firestore})
-      : assert(firebaseAuth != null),
-        assert(firestore != null),
-        super(key: key);
-
   @override
   State<StatefulWidget> createState() => _DrawerHeaderState();
 }
@@ -112,8 +81,7 @@ class _DrawerHeaderState extends State<_DrawerHeader> {
   @override
   void initState() {
     super.initState();
-    var repository = AccountRepository(
-        firestore: widget.firestore, firebaseAuth: widget.firebaseAuth);
+    var repository = AccountRepository();
     _accountBloc = AccountBloc(accountRepository: repository);
   }
 
@@ -144,10 +112,7 @@ class _DrawerHeaderState extends State<_DrawerHeader> {
                   builder:
                       _accountDrawerHeader(snapshot.data, onPressSignIn: () {
                     Navigator.of(context).pop();
-                    var signInScreen = SignInScreen(
-                      firebaseAuth: widget.firebaseAuth,
-                      firestore: widget.firestore,
-                    );
+                    var signInScreen = SignInScreen();
                     Navigator.push(
                         context,
                         MaterialPageRoute(

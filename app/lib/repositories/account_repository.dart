@@ -3,15 +3,22 @@ import 'dart:async';
 import 'package:app/models/models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:meta/meta.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AccountRepository {
-  final Firestore firestore;
-  final FirebaseAuth firebaseAuth;
+  factory AccountRepository() {
+    return new AccountRepository._internal();
+  }
 
-  AccountRepository({@required this.firebaseAuth, @required this.firestore})
-      : assert(firebaseAuth != null),
-        assert(firestore != null);
+  AccountRepository._internal() {
+    this.firestore = Firestore.instance;
+    this.firebaseAuth = FirebaseAuth.instance;
+    this.googleSignIn = GoogleSignIn();
+  }
+
+  Firestore firestore;
+  FirebaseAuth firebaseAuth;
+  GoogleSignIn googleSignIn;
 
   final StreamController<Account> _accountStream = StreamController();
   Stream<Account> get account => _accountStream.stream;
@@ -57,6 +64,18 @@ class AccountRepository {
     _accountStream.add(account);
   }
 
+  Future<void> signUpWithGoogle() async {
+    final googleUser = await googleSignIn.signIn();
+    final googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.getCredential(
+        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+    final firebaseUser = await firebaseAuth.signInWithCredential(credential);
+    var user = User(firebaseUser.email, firebaseUser.uid,
+        firebaseUser.displayName, "", null);
+    await firestore.collection('users').add(user.toJson());
+  }
+
   void _listenUserStore(FirebaseUser firebaseUser) {
     firestore
         .collection('users')
@@ -68,7 +87,7 @@ class AccountRepository {
     });
   }
 
-  void dispose() {
-    _accountStream.close();
+  void dispose() async {
+    await _accountStream.close();
   }
 }
