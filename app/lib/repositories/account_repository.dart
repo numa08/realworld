@@ -17,6 +17,13 @@ class AccountRepository {
   Stream<Account> get account => _accountStream.stream;
 
   void fetch() async {
+    firebaseAuth.onAuthStateChanged.listen((user) {
+      if (user == null) {
+        _accountStream.add(null);
+      }
+      _listenUserStore(user);
+    });
+
     var currentUser = await firebaseAuth.currentUser();
     if (currentUser == null) {
       _accountStream.add(null);
@@ -48,6 +55,17 @@ class AccountRepository {
     var firebaseUser = await firebaseAuth.signInAnonymously();
     var account = AnonymousUser(firebaseUser.uid);
     _accountStream.add(account);
+  }
+
+  void _listenUserStore(FirebaseUser firebaseUser) {
+    firestore
+        .collection('users')
+        .where('token', isEqualTo: firebaseUser.uid)
+        .snapshots()
+        .map((query) => query.documents.map((d) => User.fromJson(d.data)))
+        .listen((users) {
+      users.forEach(_accountStream.add);
+    });
   }
 
   void dispose() {
