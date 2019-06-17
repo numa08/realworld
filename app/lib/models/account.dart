@@ -1,10 +1,14 @@
-abstract class Account {
+import 'package:equatable/equatable.dart';
+
+abstract class Account extends Equatable {
   String get email;
   String get token;
   String get username;
   String get bio;
   Uri get image;
   bool get isAnonymous;
+
+  Account([List props = const []]) : super(props);
 }
 
 class AnonymousUser extends Account {
@@ -27,4 +31,10 @@ class AnonymousUser extends Account {
 
   @override
   String get username => 'guest';
+
+  @override
+  bool operator ==(Object other) => true;
+
+  @override
+  int get hashCode => super.hashCode;
 }

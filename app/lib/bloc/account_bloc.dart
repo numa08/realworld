@@ -18,23 +18,12 @@ abstract class AccountState extends Equatable {
   AccountState([List props = const []]) : super(props);
 }
 
-class AccountNotLoaded extends AccountState {}
+class AccountNotLoaded extends AccountState {
+  AccountNotLoaded() : super();
+}
 
-// Bloc が通知する Stream は widget の更新が完了したら\終了する必要がある。
-// そのため firestore が通知する stream をそのまま State に変換をしても、
-// ソースとなる Stream が無限なので、 Bloc のライフサイクルが止まってしまう。
-// そこで、 State の中で Stream を通知することで Widget では StreamBuilder
-// を使って Bloc のライフサイクルを止めること無く描画ができるようになる
-class AccountStream extends AccountState {
-  final Stream<Account> accountStream;
-
-  AccountStream({@required this.accountStream}) : assert(accountStream != null);
-
-  @override
-  bool operator ==(Object other) => other is AccountStream;
-
-  @override
-  int get hashCode => super.hashCode;
+class AccountShowing extends AccountState {
+  AccountShowing() : super();
 }
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
@@ -43,6 +32,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   AccountBloc({@required this.accountRepository})
       : assert(accountRepository != null);
 
+  Stream<Account> get accountStream => accountRepository.account;
+
   @override
   AccountState get initialState => AccountNotLoaded();
 
@@ -50,11 +41,11 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   Stream<AccountState> mapEventToState(AccountEvent event) async* {
     if (event is FetchAccount) {
       accountRepository.fetch();
-      yield AccountStream(accountStream: accountRepository.account);
+      yield AccountShowing();
     }
     if (event is LoginAnonymousAccount) {
       accountRepository.signInAnonymously();
-      yield AccountStream(accountStream: accountRepository.account);
+      yield AccountShowing();
     }
   }
 

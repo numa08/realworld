@@ -20,13 +20,15 @@ class AccountRepository {
   FirebaseAuth firebaseAuth;
   GoogleSignIn googleSignIn;
 
-  final StreamController<Account> _accountStream = StreamController();
-  Stream<Account> get account => _accountStream.stream;
+  final StreamController<Account> _accountStream = StreamController.broadcast();
+  Stream<Account> get account => _accountStream.stream.distinct();
 
   void fetch() async {
+    account.listen((_) => print('on add $_'));
     firebaseAuth.onAuthStateChanged.listen((user) {
       if (user == null) {
         _accountStream.add(null);
+        return;
       }
       _listenUserStore(user);
     });
@@ -75,6 +77,8 @@ class AccountRepository {
         firebaseUser.displayName, "", null);
     await firestore.collection('users').add(user.toJson());
   }
+
+  Future<void> signOut() => firebaseAuth.signOut();
 
   void _listenUserStore(FirebaseUser firebaseUser) {
     firestore

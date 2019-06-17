@@ -1,11 +1,10 @@
 import 'package:app/models/models.dart';
-import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'user.g.dart';
 
 @JsonSerializable()
-class User extends Equatable with Account {
+class User extends Account {
   final String email;
   final String token;
   final String username;
@@ -13,7 +12,7 @@ class User extends Equatable with Account {
   final Uri image;
 
   User(this.email, this.token, this.username, this.bio, this.image)
-      : super([email]);
+      : super([email, token, username, bio, image]);
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
