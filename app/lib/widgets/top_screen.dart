@@ -1,6 +1,7 @@
 import 'package:app/bloc/bloc.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
+import 'package:app/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -140,7 +141,19 @@ class _DrawerHeaderState extends State<_DrawerHeader> {
                 return Builder(builder: _placeholderDrawerHeader);
               } else {
                 return Builder(
-                  builder: _accountDrawerHeader(snapshot.data),
+                  builder:
+                      _accountDrawerHeader(snapshot.data, onPressSignIn: () {
+                    Navigator.of(context).pop();
+                    var signInScreen = SignInScreen(
+                      firebaseAuth: widget.firebaseAuth,
+                      firestore: widget.firestore,
+                    );
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => signInScreen,
+                            fullscreenDialog: true));
+                  }),
                 );
               }
             },
@@ -166,41 +179,43 @@ WidgetBuilder _placeholderDrawerHeader = (context) => Container(
       ])),
     );
 
-WidgetBuilder _accountDrawerHeader(Account account) => (context) => Container(
-      height: 64,
-      child: DrawerHeader(
-          child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+WidgetBuilder _accountDrawerHeader(Account account,
+        {VoidCallback onPressSignIn}) =>
+    (context) => Container(
+          height: 64,
+          child: DrawerHeader(
+              child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Builder(
+                      builder:
+                          _accountAvatarImage(account.image, account.username)),
+                  Center(child: Text(account.username)),
+                ],
+              ),
               Builder(
-                  builder:
-                      _accountAvatarImage(account.image, account.username)),
-              Center(child: Text(account.username)),
+                builder: (context) {
+                  if (account.isAnonymous) {
+                    return FlatButton(
+                      onPressed: onPressSignIn,
+                      child: Text('Sign in/ Sign up'),
+                    );
+                  } else {
+                    return Container(
+                      width: 0,
+                      height: 0,
+                    );
+                  }
+                },
+              )
             ],
-          ),
-          Builder(
-            builder: (context) {
-              if (account.isAnonymous) {
-                return FlatButton(
-                  onPressed: () => {},
-                  child: Text('Sign in/ Sign up'),
-                );
-              } else {
-                return Container(
-                  width: 0,
-                  height: 0,
-                );
-              }
-            },
-          )
-        ],
-      )),
-    );
+          )),
+        );
 
 WidgetBuilder _accountAvatarImage(Uri imageUri, String username) => (context) {
       if (imageUri == null) {
