@@ -9,6 +9,8 @@ abstract class SignInEvent extends Equatable {
 
 class SignUpWithGoogle extends SignInEvent {}
 
+class SignOut extends SignInEvent {}
+
 abstract class SignInState extends Equatable {
   SignInState([List props = const []]) : super(props);
 }
@@ -30,6 +32,8 @@ class SignInComplete extends SignInState {
   @override
   int get hashCode => super.hashCode;
 }
+
+class SignOutComplete extends SignInState {}
 
 class SignInError extends SignInState {
   final String error;
@@ -53,6 +57,15 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       try {
         await accountRepository.signUpWithGoogle();
         yield SignInComplete();
+      } catch (e) {
+        yield SignInError(e.toString());
+      }
+    }
+    if (event is SignOut) {
+      yield SignInProgress();
+      try {
+        await accountRepository.signOut();
+        yield SignOutComplete();
       } catch (e) {
         yield SignInError(e.toString());
       }

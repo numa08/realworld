@@ -17,9 +17,52 @@ class TopScreen extends StatelessWidget {
           ),
         ),
         body: Center(
-          child: Text('test'),
+          child: _Home(),
         ),
       );
+}
+
+class _Home extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _HomeState();
+}
+
+class _HomeState extends State<_Home> {
+  HomeBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = HomeBloc(AccountRepository());
+  }
+
+  @override
+  void dispose() {
+    _bloc.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var stream = StreamBuilder<Account>(
+        stream: _bloc.account,
+        builder: (context, snapshot) {
+          if (snapshot.data == null) {
+            _bloc.dispatch(SignInAnonymousAccount());
+            return CircularProgressIndicator();
+          }
+          return Text('Login with ${snapshot.data.username}');
+        });
+    return BlocListener(
+      bloc: _bloc,
+      listener: (context, state) {
+        if (state is HomeAccountNotLoaded) {
+          _bloc.dispatch(FetchHomeAccount());
+        }
+      },
+      child: stream,
+    );
+  }
 }
 
 class _DrawerHeader extends StatefulWidget {
@@ -28,63 +71,53 @@ class _DrawerHeader extends StatefulWidget {
 }
 
 class _DrawerHeaderState extends State<_DrawerHeader> {
-  AccountBloc _accountBloc;
-  SignInBloc _signInBloc;
+  AccountBloc _bloc;
 
   @override
   void initState() {
     super.initState();
-    var repository = AccountRepository();
-    _accountBloc = AccountBloc(accountRepository: repository);
-    _signInBloc = SignInBloc(accountRepository: repository);
+    _bloc = AccountBloc(AccountRepository());
   }
 
   @override
   void dispose() {
-    _accountBloc.dispose();
-    _signInBloc.dispose();
+    _bloc.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => BlocProviderTree(
-        blocProviders: [
-          BlocProvider<AccountBloc>(
-            bloc: _accountBloc,
-          )
-        ],
-        child: BlocListener(
-          bloc: _accountBloc,
-          listener: (context, state) {
-            if (state is AccountNotLoaded) {
-              _accountBloc.dispatch(FetchAccount());
-            }
-          },
-          child: Container(
-            height: 64,
-            child: DrawerHeader(
-                child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _accountAvatar(context, _accountBloc.accountStream),
-                    _accountNameLabel(context, _accountBloc.accountStream)
-                  ],
-                ),
-                _signInOutButton(context, _accountBloc.accountStream,
-                    onTapSignIn: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SignInScreen(),
-                            fullscreenDialog: true)),
-                    onTapSignOut: () {})
-              ],
-            )),
-          ),
+  Widget build(BuildContext context) => BlocListener(
+        bloc: _bloc,
+        listener: (context, state) {
+          if (state is DrawerHeaderAccountNotLoaded) {
+            _bloc.dispatch(FetchDrawerHeaderAccount());
+          }
+        },
+        child: Container(
+          height: 64,
+          child: DrawerHeader(
+              child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _accountAvatar(context, _bloc.account),
+                  _accountNameLabel(context, _bloc.account)
+                ],
+              ),
+              _signInOutButton(context, _bloc.account,
+                  onTapSignIn: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SignInScreen(),
+                          fullscreenDialog: true)),
+                  onTapSignOut: () =>
+                      _bloc.dispatch(SignOutDrawerHeaderAccount()))
+            ],
+          )),
         ),
       );
 }

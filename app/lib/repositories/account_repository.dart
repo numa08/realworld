@@ -24,7 +24,6 @@ class AccountRepository {
   Stream<Account> get account => _accountStream.stream.distinct();
 
   void fetch() async {
-    account.listen((_) => print('on add $_'));
     firebaseAuth.onAuthStateChanged.listen((user) {
       if (user == null) {
         _accountStream.add(null);
@@ -60,7 +59,7 @@ class AccountRepository {
     userDocuments.map((d) => User.fromJson(d.data)).forEach(_accountStream.add);
   }
 
-  void signInAnonymously() async {
+  Future<void> signInAnonymously() async {
     var firebaseUser = await firebaseAuth.signInAnonymously();
     var account = AnonymousUser(firebaseUser.uid);
     _accountStream.add(account);
@@ -78,7 +77,10 @@ class AccountRepository {
     await firestore.collection('users').add(user.toJson());
   }
 
-  Future<void> signOut() => firebaseAuth.signOut();
+  Future<void> signOut() async {
+    await firebaseAuth.signOut();
+    await signInAnonymously();
+  }
 
   void _listenUserStore(FirebaseUser firebaseUser) {
     firestore
