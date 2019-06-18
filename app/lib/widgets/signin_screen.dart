@@ -6,12 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class SignInScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text('conduit'), actions: [
-          IconButton(
-            icon: Icon(Icons.send),
-            onPressed: () {},
-          )
-        ]),
+        appBar: AppBar(title: Text('conduit')),
         body: _Home(),
       );
 }
@@ -22,12 +17,11 @@ class _Home extends StatefulWidget {
 }
 
 class _HomeState extends State<_Home> {
-  SignInBloc signInBloc;
+  SignInBloc _signInBloc;
 
   @override
   void initState() {
-    var repository = AccountRepository();
-    signInBloc = SignInBloc(accountRepository: repository);
+    _signInBloc = SignInBloc(AccountRepository());
     super.initState();
   }
 
@@ -35,11 +29,11 @@ class _HomeState extends State<_Home> {
   Widget build(BuildContext context) => BlocProviderTree(
         blocProviders: [
           BlocProvider<SignInBloc>(
-            bloc: signInBloc,
+            bloc: _signInBloc,
           )
         ],
         child: BlocListener(
-          bloc: signInBloc,
+          bloc: _signInBloc,
           listener: (context, state) {
             if (state is SignInComplete) {
               Navigator.of(context).pop();
@@ -61,7 +55,7 @@ class _HomeState extends State<_Home> {
 
   @override
   void dispose() {
-    signInBloc.dispose();
+    _signInBloc.dispose();
     super.dispose();
   }
 }
@@ -82,7 +76,7 @@ Widget _signUpWithGoogleButton(BuildContext context) => BlocBuilder(
         if (state is SignUp) {
           final SignInBloc bloc = BlocProvider.of<SignInBloc>(context);
           return FlatButton(
-            onPressed: () => bloc.dispatch(SignUpWithGoogle()),
+            onPressed: () => bloc.dispatch(SignInWithGoogle()),
             child: Text('Sign Up With Google'),
           );
         } else {

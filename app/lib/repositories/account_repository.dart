@@ -42,21 +42,8 @@ class AccountRepository {
       return;
     }
 
-    QuerySnapshot userQuery = await firestore
-        .collection('users')
-        .where('token', isEqualTo: currentUser.uid)
-        .getDocuments();
-
-    if (userQuery == null) {
-      _accountStream.add(null);
-      return;
-    }
-    var userDocuments = userQuery.documents;
-    if (userDocuments == null || userDocuments.isEmpty) {
-      _accountStream.add(null);
-      return;
-    }
-    userDocuments.map((d) => User.fromJson(d.data)).forEach(_accountStream.add);
+    final users = await _fetchUser(currentUser.uid);
+    users.forEach(_accountStream.add);
   }
 
   Future<void> signInAnonymously() async {
@@ -65,13 +52,17 @@ class AccountRepository {
     _accountStream.add(account);
   }
 
-  Future<void> signUpWithGoogle() async {
+  Future<void> signInWithGoogle() async {
     final googleUser = await googleSignIn.signIn();
     final googleAuth = await googleUser.authentication;
 
     final credential = GoogleAuthProvider.getCredential(
         idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     final firebaseUser = await firebaseAuth.signInWithCredential(credential);
+    final users = await _fetchUser(firebaseUser.uid);
+    if (users != null && users.isNotEmpty) {
+      return;
+    }
     var user = User(firebaseUser.email, firebaseUser.uid,
         firebaseUser.displayName, "", null);
     await firestore.collection('users').add(user.toJson());
@@ -91,6 +82,21 @@ class AccountRepository {
         .listen((users) {
       users.forEach(_accountStream.add);
     });
+  }
+
+  Future<Iterable<User>> _fetchUser(String token) async {
+    QuerySnapshot query = await firestore
+        .collection('users')
+        .where('token', isEqualTo: token)
+        .getDocuments();
+    if (query == null) {
+      return null;
+    }
+    var documents = query.documents;
+    if (documents == null || documents.isEmpty) {
+      return null;
+    }
+    return documents.map((d) => User.fromJson(d.data));
   }
 
   void dispose() async {
