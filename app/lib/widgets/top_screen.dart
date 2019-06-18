@@ -44,15 +44,11 @@ class _HomeState extends State<_Home> {
 
   @override
   Widget build(BuildContext context) {
-    var stream = StreamBuilder<Account>(
-        stream: _bloc.account,
-        builder: (context, snapshot) {
-          if (snapshot.data == null) {
-            _bloc.dispatch(SignInAnonymousAccount());
-            return CircularProgressIndicator();
-          }
-          return Text('Login with ${snapshot.data.username}');
-        });
+    _bloc.authState.listen((account) {
+      if (account is NotSignedIn) {
+        _bloc.dispatch(SignInAnonymousAccount());
+      }
+    });
     return BlocListener(
       bloc: _bloc,
       listener: (context, state) {
@@ -60,7 +56,14 @@ class _HomeState extends State<_Home> {
           _bloc.dispatch(FetchHomeAccount());
         }
       },
-      child: stream,
+      child: StreamBuilder<Account>(
+          stream: _bloc.account,
+          builder: (context, snapshot) {
+            if (snapshot.data == null) {
+              return CircularProgressIndicator();
+            }
+            return Text('Login with ${snapshot.data.username}');
+          }),
     );
   }
 }

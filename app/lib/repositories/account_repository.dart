@@ -5,76 +5,85 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AccountRepository {
+abstract class AccountRepository {
+  Stream<Account> get account;
+  Stream<AuthState> get authState;
+
+  void fetch();
+  void signInAnonymously();
+  void signInWithGoogle();
+  void signOut();
+  void dispose();
+
   factory AccountRepository() {
-    return new AccountRepository._internal();
+    return new _FirebaseAccountRepository(
+        Firestore.instance, FirebaseAuth.instance, GoogleSignIn());
   }
+}
 
-  AccountRepository._internal() {
-    this.firestore = Firestore.instance;
-    this.firebaseAuth = FirebaseAuth.instance;
-    this.googleSignIn = GoogleSignIn();
-  }
+class _FirebaseAccountRepository implements AccountRepository {
+  final Firestore _firestore;
+  final FirebaseAuth _firebaseAuth;
+  final GoogleSignIn _googleSignIn;
 
-  Firestore firestore;
-  FirebaseAuth firebaseAuth;
-  GoogleSignIn googleSignIn;
+  _FirebaseAccountRepository(
+      this._firestore, this._firebaseAuth, this._googleSignIn);
 
   final StreamController<Account> _accountStream = StreamController.broadcast();
+
+  @override
   Stream<Account> get account => _accountStream.stream.distinct();
 
+  @override
+  Stream<AuthState> get authState => _firebaseAuth.onAuthStateChanged
+      .map((u) => u == null ? NotSignedIn() : SignedIn())
+      .asBroadcastStream();
+
+  @override
   void fetch() async {
-    firebaseAuth.onAuthStateChanged.listen((user) {
-      if (user == null) {
-        _accountStream.add(null);
+    _firebaseAuth.onAuthStateChanged.listen((u) {
+      if (u == null) {
         return;
       }
-      _listenUserStore(user);
+      if (u.isAnonymous) {
+        _accountStream.add(AnonymousUser(u.uid));
+        return;
+      }
+      _listenUserStore(u);
     });
-
-    var currentUser = await firebaseAuth.currentUser();
-    if (currentUser == null) {
-      _accountStream.add(null);
-      return;
-    }
-    if (currentUser.isAnonymous) {
-      _accountStream.add(AnonymousUser(currentUser.uid));
-      return;
-    }
-
-    final users = await _fetchUser(currentUser.uid);
-    users.forEach(_accountStream.add);
   }
 
-  Future<void> signInAnonymously() async {
-    var firebaseUser = await firebaseAuth.signInAnonymously();
-    var account = AnonymousUser(firebaseUser.uid);
-    _accountStream.add(account);
-  }
+  @override
+  void signInAnonymously() => _firebaseAuth.signInAnonymously();
 
-  Future<void> signInWithGoogle() async {
-    final googleUser = await googleSignIn.signIn();
+  @override
+  void signInWithGoogle() async {
+    final googleUser = await _googleSignIn.signIn();
     final googleAuth = await googleUser.authentication;
 
     final credential = GoogleAuthProvider.getCredential(
         idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
-    final firebaseUser = await firebaseAuth.signInWithCredential(credential);
+    final firebaseUser = await _firebaseAuth.signInWithCredential(credential);
     final users = await _fetchUser(firebaseUser.uid);
     if (users != null && users.isNotEmpty) {
       return;
     }
+    // sign up
     var user = User(firebaseUser.email, firebaseUser.uid,
         firebaseUser.displayName, "", null);
-    await firestore.collection('users').add(user.toJson());
+    await _firestore.collection('users').add(user.toJson());
   }
 
-  Future<void> signOut() async {
-    await firebaseAuth.signOut();
-    await signInAnonymously();
+  @override
+  void dispose() async {
+    await _accountStream.close();
   }
+
+  @override
+  void signOut() async => _firebaseAuth.signOut();
 
   void _listenUserStore(FirebaseUser firebaseUser) {
-    firestore
+    _firestore
         .collection('users')
         .where('token', isEqualTo: firebaseUser.uid)
         .snapshots()
@@ -85,7 +94,7 @@ class AccountRepository {
   }
 
   Future<Iterable<User>> _fetchUser(String token) async {
-    QuerySnapshot query = await firestore
+    final QuerySnapshot query = await _firestore
         .collection('users')
         .where('token', isEqualTo: token)
         .getDocuments();
@@ -97,9 +106,5 @@ class AccountRepository {
       return null;
     }
     return documents.map((d) => User.fromJson(d.data));
-  }
-
-  void dispose() async {
-    await _accountStream.close();
   }
 }

@@ -17,7 +17,9 @@ abstract class HomeState extends Equatable {
 
 class HomeAccountNotLoaded extends HomeState {}
 
-class ShowHomeAccount extends HomeState {}
+class ShowHomeAccount extends HomeState {
+  ShowHomeAccount() : super();
+}
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final AccountRepository _accountRepository;
@@ -28,6 +30,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeState get initialState => HomeAccountNotLoaded();
 
   Stream<Account> get account => _accountRepository.account;
+  Stream<AuthState> get authState => _accountRepository.authState;
 
   @override
   Stream<HomeState> mapEventToState(HomeEvent event) async* {
