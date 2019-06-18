@@ -10,9 +10,12 @@ class User extends Account {
   final String username;
   final String bio;
   final Uri image;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-  User(this.email, this.token, this.username, this.bio, this.image)
-      : super([email, token, username, bio, image]);
+  User(this.email, this.token, this.username, this.bio, this.image,
+      this.createdAt, this.updatedAt)
+      : super([token, createdAt, updatedAt]);
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

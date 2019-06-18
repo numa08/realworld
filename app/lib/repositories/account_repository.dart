@@ -70,7 +70,7 @@ class _FirebaseAccountRepository implements AccountRepository {
     }
     // sign up
     var user = User(firebaseUser.email, firebaseUser.uid,
-        firebaseUser.displayName, "", null);
+        firebaseUser.displayName, "", null, DateTime.now(), DateTime.now());
     await _firestore.collection('users').add(user.toJson());
   }
 
