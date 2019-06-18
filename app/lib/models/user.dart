@@ -10,8 +10,12 @@ class User extends Account {
   final String username;
   final String bio;
   final Uri image;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  @JsonKey()
+  @FireDatetimeJsonConverter()
+  final FireDateTime createdAt;
+  @JsonKey()
+  @FireDatetimeJsonConverter()
+  final FireDateTime updatedAt;
 
   User(this.email, this.token, this.username, this.bio, this.image,
       this.createdAt, this.updatedAt)
