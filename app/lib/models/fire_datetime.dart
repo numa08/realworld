@@ -1,16 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-abstract class FireDateTime {}
+abstract class FireDateTime {
+  DateTime get dateTime;
+}
 
-class FieldValueNow extends FireDateTime {}
+class FieldValueNow extends FireDateTime {
+  @override
+  DateTime get dateTime => null;
+}
 
 class TimestampDatetime extends FireDateTime {
   final Timestamp timestamp;
 
   TimestampDatetime(this.timestamp);
 
-  DateTime get datetime => timestamp.toDate();
+  DateTime get dateTime => timestamp.toDate();
 }
 
 class FireDatetimeJsonConverter
@@ -31,7 +36,7 @@ class FireDatetimeJsonConverter
       return FieldValue.serverTimestamp();
     }
     if (object is TimestampDatetime) {
-      return object.datetime;
+      return object.dateTime;
     }
   }
 }

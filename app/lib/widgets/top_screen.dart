@@ -5,6 +5,7 @@ import 'package:app/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class TopScreen extends StatelessWidget {
   @override
@@ -34,7 +35,7 @@ class TopScreen extends StatelessWidget {
                   'test body',
                   FieldValueNow(),
                   FieldValueNow(),
-                  'users/${user.uid}',
+                  '/users/${user.uid}',
                   ["test", "test2"]);
               await ArticleRepository().add(article);
             }
@@ -57,7 +58,8 @@ class _HomeState extends State<_Home> {
   @override
   void initState() {
     super.initState();
-    _bloc = HomeBloc(AccountRepository(), ArticleRepository());
+    _bloc =
+        HomeBloc(AccountRepository(), ArticleRepository(), UserRepository());
   }
 
   @override
@@ -86,7 +88,59 @@ class _HomeState extends State<_Home> {
             if (snapshot.data == null) {
               return CircularProgressIndicator();
             }
-            return Text('We have ${snapshot.data.length} articles');
+            return ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) => GestureDetector(
+                      onTap: () => print("tap $index"),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              _accountAvatar(context,
+                                  _bloc.user(snapshot.data[index].authorRef)),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Text(snapshot.data[index].title,
+                                      style: Theme.of(context).textTheme.title),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  Wrap(
+                                    spacing: 4.0,
+                                    children: [
+                                      _accountNameLabel(
+                                          context,
+                                          _bloc.user(
+                                              snapshot.data[index].authorRef)),
+                                      Text(timeago.format(snapshot
+                                          .data[index].createdAt.dateTime))
+                                    ],
+                                  ),
+                                  Wrap(
+                                      spacing: 8.0,
+                                      alignment: WrapAlignment.start,
+                                      children: snapshot.data[index].tags
+                                          .map((t) => ActionChip(
+                                                label: Text(t),
+                                                onPressed: () {},
+                                              ))
+                                          .toList())
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ));
           }),
     );
   }
