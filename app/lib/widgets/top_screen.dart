@@ -99,8 +99,11 @@ class _HomeState extends State<_Home> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.max,
                             children: [
-                              _accountAvatar(context,
-                                  _bloc.user(snapshot.data[index].authorRef)),
+                              Hero(
+                                tag: 'profile',
+                                child: _accountAvatar(context,
+                                    _bloc.user(snapshot.data[index].authorRef)),
+                              ),
                               SizedBox(
                                 width: 8,
                               ),
@@ -109,8 +112,12 @@ class _HomeState extends State<_Home> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Text(snapshot.data[index].title,
-                                      style: Theme.of(context).textTheme.title),
+                                  Hero(
+                                    tag: 'article-title',
+                                    child: Text(snapshot.data[index].title,
+                                        style:
+                                            Theme.of(context).textTheme.title),
+                                  ),
                                   SizedBox(
                                     height: 8,
                                   ),
@@ -129,9 +136,12 @@ class _HomeState extends State<_Home> {
                                       spacing: 8.0,
                                       alignment: WrapAlignment.start,
                                       children: snapshot.data[index].tags
-                                          .map((t) => ActionChip(
-                                                label: Text(t),
-                                                onPressed: () {},
+                                          .map((t) => Hero(
+                                                tag: 'article-tag',
+                                                child: ActionChip(
+                                                  label: Text(t),
+                                                  onPressed: () {},
+                                                ),
                                               ))
                                           .toList())
                                 ],
