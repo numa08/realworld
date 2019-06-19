@@ -23,14 +23,15 @@ class ShowHomeAccount extends HomeState {
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final AccountRepository _accountRepository;
+  final ArticleRepository _articleRepository;
 
-  HomeBloc(this._accountRepository);
+  HomeBloc(this._accountRepository, this._articleRepository);
 
   @override
   HomeState get initialState => HomeAccountNotLoaded();
 
-  Stream<Account> get account => _accountRepository.account;
   Stream<AuthState> get authState => _accountRepository.authState;
+  Stream<List<Article>> get articles => _articleRepository.articles;
 
   @override
   Stream<HomeState> mapEventToState(HomeEvent event) async* {

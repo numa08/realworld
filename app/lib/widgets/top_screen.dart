@@ -33,7 +33,7 @@ class _HomeState extends State<_Home> {
   @override
   void initState() {
     super.initState();
-    _bloc = HomeBloc(AccountRepository());
+    _bloc = HomeBloc(AccountRepository(), ArticleRepository());
   }
 
   @override
@@ -56,13 +56,13 @@ class _HomeState extends State<_Home> {
           _bloc.dispatch(FetchHomeAccount());
         }
       },
-      child: StreamBuilder<Account>(
-          stream: _bloc.account,
+      child: StreamBuilder<List<Article>>(
+          stream: _bloc.articles,
           builder: (context, snapshot) {
             if (snapshot.data == null) {
               return CircularProgressIndicator();
             }
-            return Text('Login with ${snapshot.data.username}');
+            return Text('We have ${snapshot.data.length} articles');
           }),
     );
   }
