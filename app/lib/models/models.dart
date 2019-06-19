@@ -4,4 +4,5 @@ export 'auth_state.dart';
 export 'comment.dart';
 export 'fire_datetime.dart';
 export 'profile.dart';
+export 'tag.dart';
 export 'user.dart';

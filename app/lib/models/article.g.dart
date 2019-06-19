@@ -14,7 +14,8 @@ Article _$ArticleFromJson(Map<String, dynamic> json) {
       json['body'] as String,
       const FireDatetimeJsonConverter().fromJson(json['createdAt']),
       const FireDatetimeJsonConverter().fromJson(json['updatedAt']),
-      json['authorRef'] as String);
+      json['authorRef'] as String,
+      (json['tags'] as List)?.map((e) => e as String)?.toList());
 }
 
 Map<String, dynamic> _$ArticleToJson(Article instance) => <String, dynamic>{
@@ -24,5 +25,6 @@ Map<String, dynamic> _$ArticleToJson(Article instance) => <String, dynamic>{
       'body': instance.body,
       'createdAt': const FireDatetimeJsonConverter().toJson(instance.createdAt),
       'updatedAt': const FireDatetimeJsonConverter().toJson(instance.updatedAt),
-      'authorRef': instance.authorRef
+      'authorRef': instance.authorRef,
+      'tags': instance.tags
     };

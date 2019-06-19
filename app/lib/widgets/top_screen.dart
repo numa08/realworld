@@ -2,6 +2,7 @@ import 'package:app/bloc/bloc.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
 import 'package:app/widgets/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,6 +19,29 @@ class TopScreen extends StatelessWidget {
         ),
         body: Center(
           child: _Home(),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Future<void> _addTestArticle() async {
+              final user = await FirebaseAuth.instance.currentUser();
+              if (user == null || user.isAnonymous) {
+                return;
+              }
+              var article = Article(
+                  'test-slug',
+                  'test title',
+                  'test description',
+                  'test body',
+                  FieldValueNow(),
+                  FieldValueNow(),
+                  'users/${user.uid}',
+                  ["test", "test2"]);
+              await ArticleRepository().add(article);
+            }
+
+            _addTestArticle();
+          },
+          child: Icon(Icons.add),
         ),
       );
 }

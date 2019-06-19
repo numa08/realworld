@@ -17,16 +17,18 @@ class Article extends Equatable {
   @FireDatetimeJsonConverter()
   final FireDateTime updatedAt;
   final String authorRef;
+  final List<String> tags;
 
   Article(this.slug, this.title, this.description, this.body, this.createdAt,
-      this.updatedAt, this.authorRef)
+      this.updatedAt, this.authorRef, this.tags)
       : assert(slug != null),
         assert(title != null),
         assert(description != null),
         assert(body != null),
         assert(createdAt != null),
         assert(updatedAt != null),
-        assert(authorRef != null);
+        assert(authorRef != null),
+        assert(tags != null);
 
   factory Article.fromJson(Map<String, dynamic> json) =>
       _$ArticleFromJson(json);

@@ -17,10 +17,24 @@ class _FirestoreArticleRepository implements ArticleRepository {
   @override
   Future<void> add(Article article) async {
     final data = article.toJson();
-    await _firestore
-        .document('/users/${article.authorRef}')
+    final articleRef = await _firestore
+        .document(article.authorRef)
         .collection('articles')
         .add(data);
+    var tags = article.tags;
+    if (tags == null) {
+      return;
+    }
+    final batch = _firestore.batch();
+    tags.map((t) => Tag(articleRef.path, t)).forEach((tag) {
+      batch.setData(
+          _firestore
+              .document(tag.articleRef)
+              .collection('tags')
+              .document(tag.tag),
+          tag.toJson());
+    });
+    await batch.commit();
   }
 
   @override
