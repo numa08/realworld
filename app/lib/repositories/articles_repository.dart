@@ -40,6 +40,7 @@ class _FirestoreArticleRepository implements ArticleRepository {
   @override
   Stream<List<Article>> get articles => _firestore
       .collection('articles')
+      .orderBy('updatedAt', descending: true)
       .snapshots()
       .map((q) => q.documents
           .map((d) {
