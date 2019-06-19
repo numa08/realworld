@@ -10,8 +10,8 @@ abstract class AccountRepository {
   Stream<AuthState> get authState;
 
   void fetch();
-  void signInAnonymously();
-  void signInWithGoogle();
+  Future<void> signInAnonymously();
+  Future<void> signInWithGoogle();
   void signOut();
   void dispose();
 
@@ -54,10 +54,10 @@ class _FirebaseAccountRepository implements AccountRepository {
   }
 
   @override
-  void signInAnonymously() => _firebaseAuth.signInAnonymously();
+  Future<void> signInAnonymously() => _firebaseAuth.signInAnonymously();
 
   @override
-  void signInWithGoogle() async {
+  Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     final googleAuth = await googleUser.authentication;
 
@@ -65,13 +65,17 @@ class _FirebaseAccountRepository implements AccountRepository {
         idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
     final firebaseUser = await _firebaseAuth.signInWithCredential(credential);
     final users = await _fetchUser(firebaseUser.uid);
-    if (users != null && users.isNotEmpty) {
+    if (users != null) {
       return;
     }
     // sign up
     var user = User(firebaseUser.email, firebaseUser.uid,
         firebaseUser.displayName, "", null, FieldValueNow(), FieldValueNow());
-    await _firestore.collection('users').add(user.toJson());
+    await _firestore
+        .collection('users')
+        .document(firebaseUser.uid)
+        .setData(user.toJson());
+    print('set user data ${firebaseUser.uid}');
   }
 
   @override
@@ -85,26 +89,19 @@ class _FirebaseAccountRepository implements AccountRepository {
   void _listenUserStore(FirebaseUser firebaseUser) {
     _firestore
         .collection('users')
-        .where('token', isEqualTo: firebaseUser.uid)
+        .document(firebaseUser.uid)
         .snapshots()
-        .map((query) => query.documents.map((d) => User.fromJson(d.data)))
-        .listen((users) {
-      users.forEach(_accountStream.add);
-    });
+        .where((d) => d != null || d.data != null)
+        .map((d) => User.fromJson(d.data))
+        .listen(_accountStream.add);
   }
 
-  Future<Iterable<User>> _fetchUser(String token) async {
-    final QuerySnapshot query = await _firestore
-        .collection('users')
-        .where('token', isEqualTo: token)
-        .getDocuments();
-    if (query == null) {
+  Future<User> _fetchUser(String token) async {
+    final DocumentSnapshot userData =
+        await _firestore.collection('users').document(token).get();
+    if (userData == null || userData.data == null) {
       return null;
     }
-    var documents = query.documents;
-    if (documents == null || documents.isEmpty) {
-      return null;
-    }
-    return documents.map((d) => User.fromJson(d.data));
+    return User.fromJson(userData.data);
   }
 }

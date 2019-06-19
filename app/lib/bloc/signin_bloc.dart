@@ -45,7 +45,8 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
       try {
         await _accountRepository.signInWithGoogle();
         yield SignInComplete();
-      } catch (e) {
+      } catch (e, st) {
+        print(st.toString());
         yield SignInError(e.toString());
       }
     }
