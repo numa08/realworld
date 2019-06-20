@@ -1,54 +1,33 @@
+import 'dart:async';
+
 import 'package:app/repositories/repositories.dart';
-import 'package:bloc/bloc.dart';
-import 'package:equatable/equatable.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 
-abstract class SignInEvent extends Equatable {
-  SignInEvent([List props = const []]) : super(props);
-}
-
-class SignInWithGoogle extends SignInEvent {}
-
-abstract class SignInState extends Equatable {
-  SignInState([List props = const []]) : super(props);
-}
-
-class SignUp extends SignInState {}
-
-class SignInProgress extends SignInState {}
-
-class SignInComplete extends SignInState {}
-
-class SignInError extends SignInState {
-  final String error;
-
-  SignInError(this.error) : super([error]);
-}
-
-class SignInBloc extends Bloc<SignInEvent, SignInState> {
+class SignInBloc implements Bloc {
   final AccountRepository _accountRepository;
 
-  SignInBloc(this._accountRepository);
-
-  @override
-  SignInState get initialState => SignUp();
-
-  @override
-  void dispose() {
-    _accountRepository.dispose();
-    super.dispose();
+  final StreamController<void> _signInWithGoogleStream =
+      StreamController.broadcast();
+  Sink<void> get signInWithGoogle => _signInWithGoogleStream.sink;
+  final StreamController<void> _signInCompleteStream =
+      StreamController.broadcast();
+  Stream<void> get signInComplete => _signInCompleteStream.stream;
+  final StreamController<bool> _isSignInProgressController =
+      StreamController.broadcast();
+  Stream<bool> get isSignInProgress => _isSignInProgressController.stream;
+  SignInBloc(this._accountRepository) {
+    _signInWithGoogleStream.stream.listen((_) async {
+      _isSignInProgressController.add(true);
+      await _accountRepository.signInWithGoogle();
+      _isSignInProgressController.add(false);
+      _signInCompleteStream.add(null);
+    });
   }
 
   @override
-  Stream<SignInState> mapEventToState(SignInEvent event) async* {
-    if (event is SignInWithGoogle) {
-      yield SignInProgress();
-      try {
-        await _accountRepository.signInWithGoogle();
-        yield SignInComplete();
-      } catch (e, st) {
-        print(st.toString());
-        yield SignInError(e.toString());
-      }
-    }
+  void dispose() async {
+    await _signInWithGoogleStream.close();
+    await _signInCompleteStream.close();
+    await _isSignInProgressController.close();
   }
 }

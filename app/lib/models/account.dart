@@ -12,7 +12,7 @@ abstract class Account extends Equatable {
 }
 
 class AnonymousUser extends Account {
-  AnonymousUser(this.token);
+  AnonymousUser(this.token) : super([token]);
 
   @override
   String get bio => 'guest';
@@ -31,10 +31,4 @@ class AnonymousUser extends Account {
 
   @override
   String get username => 'guest';
-
-  @override
-  bool operator ==(Object other) => true;
-
-  @override
-  int get hashCode => super.hashCode;
 }

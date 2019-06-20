@@ -12,8 +12,8 @@ abstract class AccountRepository {
   void fetch();
   Future<void> signInAnonymously();
   Future<void> signInWithGoogle();
-  void signOut();
-  void dispose();
+  Future<void> signOut();
+  Future<void> dispose();
 
   factory AccountRepository() {
     return new _FirebaseAccountRepository(
@@ -25,6 +25,7 @@ class _FirebaseAccountRepository implements AccountRepository {
   final Firestore _firestore;
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  bool _alreadyUserStreamListened = false;
 
   _FirebaseAccountRepository(
       this._firestore, this._firebaseAuth, this._googleSignIn);
@@ -32,7 +33,8 @@ class _FirebaseAccountRepository implements AccountRepository {
   final StreamController<Account> _accountStream = StreamController.broadcast();
 
   @override
-  Stream<Account> get account => _accountStream.stream.distinct();
+  Stream<Account> get account =>
+      _accountStream.stream.asBroadcastStream().distinct();
 
   @override
   Stream<AuthState> get authState => _firebaseAuth.onAuthStateChanged
@@ -49,7 +51,9 @@ class _FirebaseAccountRepository implements AccountRepository {
         _accountStream.add(AnonymousUser(u.uid));
         return;
       }
-      _listenUserStore(u);
+      if (!_alreadyUserStreamListened) {
+        _listenUserStore(u);
+      }
     });
   }
 
@@ -69,31 +73,37 @@ class _FirebaseAccountRepository implements AccountRepository {
       return;
     }
     // sign up
-    var user = User(firebaseUser.email, firebaseUser.uid,
-        firebaseUser.displayName, "", null, FieldValueNow(), FieldValueNow());
+    var user = User(
+        firebaseUser.email,
+        firebaseUser.uid,
+        firebaseUser.displayName,
+        "",
+        Uri.parse(firebaseUser.photoUrl),
+        FieldValueNow(),
+        FieldValueNow());
     await _firestore
         .collection('users')
         .document(firebaseUser.uid)
         .setData(user.toJson());
-    print('set user data ${firebaseUser.uid}');
   }
 
   @override
-  void dispose() async {
+  Future<void> dispose() async {
     await _accountStream.close();
   }
 
   @override
-  void signOut() async => _firebaseAuth.signOut();
+  Future<void> signOut() => _firebaseAuth.signOut();
 
   void _listenUserStore(FirebaseUser firebaseUser) {
-    _firestore
-        .collection('users')
-        .document(firebaseUser.uid)
-        .snapshots()
-        .where((d) => d != null || d.data != null)
-        .map((d) => User.fromJson(d.data))
-        .listen(_accountStream.add);
+    _alreadyUserStreamListened = _firestore
+            .collection('users')
+            .document(firebaseUser.uid)
+            .snapshots()
+            .where((d) => d != null && d.data != null)
+            .map((d) => User.fromJson(d.data))
+            .listen(_accountStream.add) !=
+        null;
   }
 
   Future<User> _fetchUser(String token) async {
