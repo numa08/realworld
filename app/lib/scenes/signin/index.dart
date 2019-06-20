@@ -35,6 +35,18 @@ class _Home extends StatelessWidget {
   Widget build(BuildContext context) => StreamBuilder<bool>(
         stream: isSignInProgress,
         initialData: false,
-        builder: (context, snapshot) {},
+        builder: (context, snapshot) {
+          if (snapshot.data) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return Center(
+                child: MaterialButton(
+              onPressed: onTapSignInWithGoogle,
+              child: Text('Sign in with google'),
+            ));
+          }
+        },
       );
 }

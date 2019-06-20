@@ -13,15 +13,18 @@ class TopBloc implements Bloc {
   final _signInController = StreamController<void>.broadcast();
   final _signOutController = StreamController<void>.broadcast();
   final _fetchAccountController = StreamController<void>.broadcast();
+  final _addArticleController = StreamController<void>.broadcast();
 
   Stream<Account> get account => _accountRepository.account;
   Stream<AuthState> get authState => _accountRepository.authState;
   Stream<List<Article>> get articles => _articleRepository.articles;
   Stream<void> get moveToSignIn => _signInController.stream;
+  Stream<void> get moveToAddArticle => _addArticleController.stream;
   Sink<void> get signInWithAnonymous => _signInWithAnonymousController.sink;
   Sink<void> get signIn => _signInController.sink;
   Sink<void> get signOut => _signOutController.sink;
   Sink<void> get fetchAccount => _fetchAccountController.sink;
+  Sink<void> get tapAddArticle => _addArticleController.sink;
 
   TopBloc(
       this._accountRepository, this._articleRepository, this._userRepository)
@@ -46,5 +49,6 @@ class TopBloc implements Bloc {
     await _signInController.close();
     await _signOutController.close();
     await _fetchAccountController.close();
+    await _addArticleController.close();
   }
 }

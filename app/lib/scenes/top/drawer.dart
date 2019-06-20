@@ -84,7 +84,6 @@ class _TopDrawerHeader extends StatelessWidget {
             if (snapshot.data == null) {
               return Container();
             }
-            print('sign in out button listen data ${snapshot.data}');
             if (snapshot.data.isAnonymous) {
               return FlatButton(
                 child: Text('Sign In/Up'),

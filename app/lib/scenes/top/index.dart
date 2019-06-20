@@ -28,6 +28,13 @@ class TopScene extends StatelessWidget {
                 articleStream: bloc.articles, userStream: bloc.user);
           }),
           drawer: TopDrawer(),
+          floatingActionButton: Builder(builder: (context) {
+            final bloc = BlocProvider.of<TopBloc>(context);
+            return _AddArticleButton(
+              account: bloc.account,
+              onTapAdd: () => bloc.tapAddArticle.add(null),
+            );
+          }),
         ),
       );
 }
@@ -112,4 +119,24 @@ class _ArticleListView extends StatelessWidget {
                   ),
                 ));
       });
+}
+
+class _AddArticleButton extends StatelessWidget {
+  final Stream<Account> account;
+  final VoidCallback onTapAdd;
+
+  const _AddArticleButton({Key key, this.account, this.onTapAdd})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<bool>(
+        stream: account.map((a) => a != null && !a.isAnonymous),
+        initialData: false,
+        builder: (context, snapshot) => Visibility(
+            visible: snapshot.data,
+            child: FloatingActionButton(
+              onPressed: onTapAdd,
+              child: Icon(Icons.add),
+            )),
+      );
 }

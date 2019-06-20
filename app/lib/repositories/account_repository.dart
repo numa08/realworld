@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app/models/models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class AccountRepository {
@@ -25,7 +26,7 @@ class _FirebaseAccountRepository implements AccountRepository {
   final Firestore _firestore;
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
-  bool _alreadyUserStreamListened = false;
+  StreamSubscription<User> _userSubscription;
 
   _FirebaseAccountRepository(
       this._firestore, this._firebaseAuth, this._googleSignIn);
@@ -43,15 +44,22 @@ class _FirebaseAccountRepository implements AccountRepository {
 
   @override
   void fetch() async {
-    _firebaseAuth.onAuthStateChanged.listen((u) {
-      if (u == null) {
-        return;
+    _firebaseAuth.onAuthStateChanged.listen((u) async {
+      debugPrint('on auth state changed $u');
+      try {
+        if (u == null) {
+          return;
+        }
+        if (u.isAnonymous) {
+          _accountStream.add(AnonymousUser(u.uid));
+          return;
+        }
+      } finally {
+        // サインアウトが通知されたら、 firestore の監視の停止を試みる
+        await _userSubscription?.cancel();
+        _userSubscription = null;
       }
-      if (u.isAnonymous) {
-        _accountStream.add(AnonymousUser(u.uid));
-        return;
-      }
-      if (!_alreadyUserStreamListened) {
+      if (_userSubscription == null) {
         _listenUserStore(u);
       }
     });
@@ -93,17 +101,20 @@ class _FirebaseAccountRepository implements AccountRepository {
   }
 
   @override
-  Future<void> signOut() => _firebaseAuth.signOut();
+  Future<void> signOut() async {
+    await _firebaseAuth.signOut();
+    await _userSubscription.cancel();
+    _userSubscription = null;
+  }
 
   void _listenUserStore(FirebaseUser firebaseUser) {
-    _alreadyUserStreamListened = _firestore
-            .collection('users')
-            .document(firebaseUser.uid)
-            .snapshots()
-            .where((d) => d != null && d.data != null)
-            .map((d) => User.fromJson(d.data))
-            .listen(_accountStream.add) !=
-        null;
+    _userSubscription = _firestore
+        .collection('users')
+        .document(firebaseUser.uid)
+        .snapshots()
+        .where((d) => d != null && d.data != null)
+        .map((d) => User.fromJson(d.data))
+        .listen(_accountStream.add);
   }
 
   Future<User> _fetchUser(String token) async {
