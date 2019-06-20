@@ -8,14 +8,14 @@ part of 'article.dart';
 
 Article _$ArticleFromJson(Map<String, dynamic> json) {
   return Article(
-      json['slug'] as String,
-      json['title'] as String,
-      json['description'] as String,
-      json['body'] as String,
-      const FireDatetimeJsonConverter().fromJson(json['createdAt']),
-      const FireDatetimeJsonConverter().fromJson(json['updatedAt']),
-      json['authorRef'] as String,
-      (json['tags'] as List)?.map((e) => e as String)?.toList());
+      slug: json['slug'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      body: json['body'] as String,
+      createdAt: const FireDatetimeJsonConverter().fromJson(json['createdAt']),
+      updatedAt: const FireDatetimeJsonConverter().fromJson(json['updatedAt']),
+      authorRef: json['authorRef'] as String,
+      tags: (json['tags'] as List)?.map((e) => e as String)?.toList());
 }
 
 Map<String, dynamic> _$ArticleToJson(Article instance) => <String, dynamic>{

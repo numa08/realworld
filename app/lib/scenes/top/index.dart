@@ -2,6 +2,7 @@ import 'package:app/bloc/bloc.dart';
 import 'package:app/components/components.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
+import 'package:app/scenes/post_article/index.dart';
 import 'package:app/scenes/top/drawer.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,8 @@ class TopScene extends StatelessWidget {
               }
             });
             bloc.fetchAccount.add(null);
+            bloc.moveToAddArticle.listen((_) => Navigator.push(context,
+                MaterialPageRoute(builder: (_context) => PostScene())));
             return _ArticleListView(
                 articleStream: bloc.articles, userStream: bloc.user);
           }),

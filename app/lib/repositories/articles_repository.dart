@@ -1,9 +1,11 @@
 import 'package:app/models/models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class ArticleRepository {
   Stream<List<Article>> get articles;
-  Future<void> add(Article article);
+  Future<void> post(Article article);
+  Stream<Article> findArticle(String articleRef);
 
   factory ArticleRepository() =>
       _FirestoreArticleRepository(Firestore.instance);
@@ -15,18 +17,28 @@ class _FirestoreArticleRepository implements ArticleRepository {
   _FirestoreArticleRepository(this._firestore);
 
   @override
-  Future<void> add(Article article) async {
+  Future<void> post(Article article) async {
     final data = article.toJson();
-    final articleRef = await _firestore
+
+    final id = article.id ??
+        _firestore
+            .document(article.authorRef)
+            .collection('articles')
+            .document()
+            .documentID;
+
+    await _firestore
         .document(article.authorRef)
         .collection('articles')
-        .add(data);
+        .document(id)
+        .setData(data, merge: true);
+    debugPrint('post article to ${article.authorRef}/articles/$id');
     var tags = article.tags;
     if (tags == null) {
       return;
     }
     final batch = _firestore.batch();
-    tags.map((t) => Tag(articleRef.path, t)).forEach((tag) {
+    tags.map((t) => Tag('${article.authorRef}/articles/$id', t)).forEach((tag) {
       batch.setData(
           _firestore
               .document(tag.articleRef)
@@ -53,4 +65,7 @@ class _FirestoreArticleRepository implements ArticleRepository {
           .where((a) => a != null)
           .toList())
       .asBroadcastStream();
+
+  @override
+  Stream<Article> findArticle(String articleRef) => Stream.empty();
 }
