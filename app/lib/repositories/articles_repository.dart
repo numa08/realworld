@@ -18,14 +18,14 @@ class _FirestoreArticleRepository implements ArticleRepository {
 
   @override
   Future<void> post(Article article) async {
-    final data = article.toJson();
-
     final id = article.id ??
         _firestore
             .document(article.authorRef)
             .collection('articles')
             .document()
             .documentID;
+
+    final data = article.copyWith(id: id).toJson();
 
     await _firestore
         .document(article.authorRef)
