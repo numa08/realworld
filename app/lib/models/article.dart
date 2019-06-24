@@ -36,7 +36,6 @@ class Article extends Equatable {
         assert(body != null),
         assert(createdAt != null),
         assert(updatedAt != null),
-        assert(authorRef != null),
         assert(tags != null);
 
   Article copyWith(
@@ -50,7 +49,7 @@ class Article extends Equatable {
           String authorRef,
           List<String> tags}) =>
       Article(
-          id: slug ?? this.id,
+          id: id ?? this.id,
           slug: slug ?? this.slug,
           title: title ?? this.title,
           description: description ?? this.description,

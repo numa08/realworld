@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/bloc/bloc.dart';
 import 'package:app/components/components.dart';
 import 'package:app/models/models.dart';
@@ -13,33 +15,73 @@ class TopScene extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider<TopBloc>(
         creator: (_context, _bag) =>
             TopBloc(AccountRepository(), ArticleRepository(), UserRepository()),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('conduit'),
-          ),
-          body: Builder(builder: (context) {
-            final bloc = BlocProvider.of<TopBloc>(context);
-            bloc.authState.listen((state) {
-              if (state is NotSignedIn) {
-                bloc.signInWithAnonymous.add(null);
-              }
-            });
+        child: Builder(
+          builder: (context) {
+            final TopBloc bloc = BlocProvider.of(context);
             bloc.fetchAccount.add(null);
-            bloc.moveToAddArticle.listen((_) => Navigator.push(context,
-                MaterialPageRoute(builder: (_context) => PostScene())));
-            return _ArticleListView(
-                articleStream: bloc.articles, userStream: bloc.user);
-          }),
-          drawer: TopDrawer(),
-          floatingActionButton: Builder(builder: (context) {
-            final bloc = BlocProvider.of<TopBloc>(context);
-            return _AddArticleButton(
-              account: bloc.account,
-              onTapAdd: () => bloc.tapAddArticle.add(null),
+            return _TopBody(
+              bloc: bloc,
             );
-          }),
+          },
         ),
       );
+}
+
+class _TopBody extends StatefulWidget {
+  final TopBloc bloc;
+
+  const _TopBody({Key key, this.bloc}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _TopBodyState();
+}
+
+class _TopBodyState extends State<_TopBody> {
+  StreamSubscription _authStateChangedSubscription;
+  StreamSubscription _moveToAddArticleSubscription;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+      appBar: AppBar(
+        title: Text('conduit'),
+      ),
+      body: _ArticleListView(
+          articleStream: widget.bloc.articles, userStream: widget.bloc.user),
+      drawer: TopDrawer(),
+      floatingActionButton: _AddArticleButton(
+        account: widget.bloc.account,
+        onTapAdd: () => widget.bloc.tapAddArticle.add(null),
+      ));
+
+  @override
+  void didUpdateWidget(_TopBody oldWidget) {
+    if (_authStateChangedSubscription == null) {
+      setState(() {
+        _authStateChangedSubscription = widget.bloc.authState.listen((state) {
+          if (state is NotSignedIn) {
+            widget.bloc.signInWithAnonymous.add(null);
+          }
+        });
+      });
+    }
+    if (_moveToAddArticleSubscription == null) {
+      setState(() {
+        _moveToAddArticleSubscription =
+            widget.bloc.moveToAddArticle.listen((_) {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => PostScene()));
+        });
+      });
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    _authStateChangedSubscription?.cancel();
+    _moveToAddArticleSubscription?.cancel();
+    super.dispose();
+  }
 }
 
 class _ArticleListView extends StatelessWidget {
@@ -68,12 +110,8 @@ class _ArticleListView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          Hero(
-                            tag: 'profile-$index',
-                            child: AccountAvatar(
-                              account:
-                                  userStream(snapshot.data[index].authorRef),
-                            ),
+                          AccountAvatar(
+                            account: userStream(snapshot.data[index].authorRef),
                           ),
                           SizedBox(
                             width: 8,
@@ -83,11 +121,8 @@ class _ArticleListView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Hero(
-                                tag: 'article-title-$index',
-                                child: Text(snapshot.data[index].title,
-                                    style: Theme.of(context).textTheme.title),
-                              ),
+                              Text(snapshot.data[index].title,
+                                  style: Theme.of(context).textTheme.title),
                               SizedBox(
                                 height: 8,
                               ),
@@ -106,12 +141,9 @@ class _ArticleListView extends StatelessWidget {
                                   spacing: 8.0,
                                   alignment: WrapAlignment.start,
                                   children: snapshot.data[index].tags
-                                      .map((t) => Hero(
-                                            tag: 'article-tag-$index-$t',
-                                            child: ActionChip(
-                                              label: Text(t),
-                                              onPressed: () {},
-                                            ),
+                                      .map((t) => ActionChip(
+                                            label: Text(t),
+                                            onPressed: () {},
                                           ))
                                       .toList())
                             ],

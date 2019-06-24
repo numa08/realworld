@@ -1,5 +1,6 @@
 import 'package:app/models/models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 abstract class ArticleRepository {
@@ -8,37 +9,44 @@ abstract class ArticleRepository {
   Stream<Article> findArticle(String articleRef);
 
   factory ArticleRepository() =>
-      _FirestoreArticleRepository(Firestore.instance);
+      _FirestoreArticleRepository(Firestore.instance, FirebaseAuth.instance);
 }
 
 class _FirestoreArticleRepository implements ArticleRepository {
   final Firestore _firestore;
+  final FirebaseAuth _firebaseAuth;
 
-  _FirestoreArticleRepository(this._firestore);
+  _FirestoreArticleRepository(this._firestore, this._firebaseAuth);
 
   @override
   Future<void> post(Article article) async {
+    final authorRef = article.authorRef ??
+        await _firebaseAuth.currentUser().then((u) => "/users/${u.uid}");
+
     final id = article.id ??
         _firestore
-            .document(article.authorRef)
+            .document(authorRef)
             .collection('articles')
             .document()
             .documentID;
 
-    final data = article.copyWith(id: id).toJson();
+    final data = article.copyWith(id: id, authorRef: authorRef).toJson();
 
     await _firestore
-        .document(article.authorRef)
+        .document(authorRef)
         .collection('articles')
         .document(id)
         .setData(data, merge: true);
-    debugPrint('post article to ${article.authorRef}/articles/$id');
+    debugPrint('post article to $authorRef/articles/$id');
     var tags = article.tags;
-    if (tags == null) {
+    if (tags.isEmpty) {
       return;
     }
     final batch = _firestore.batch();
-    tags.map((t) => Tag('${article.authorRef}/articles/$id', t)).forEach((tag) {
+    tags
+        .where((t) => t.isNotEmpty)
+        .map((t) => Tag('$authorRef/articles/$id', t))
+        .forEach((tag) {
       batch.setData(
           _firestore
               .document(tag.articleRef)
