@@ -133,8 +133,10 @@ class _ArticleListView extends StatelessWidget {
                                     account: userStream(
                                         snapshot.data[index].authorRef),
                                   ),
-                                  Text(timeago.format(
-                                      snapshot.data[index].createdAt.dateTime))
+                                  _TimeAgoText(
+                                    date:
+                                        snapshot.data[index].createdAt.dateTime,
+                                  )
                                 ],
                               ),
                               Wrap(
@@ -174,5 +176,17 @@ class _AddArticleButton extends StatelessWidget {
               onPressed: onTapAdd,
               child: Icon(Icons.add),
             )),
+      );
+}
+
+class _TimeAgoText extends StatelessWidget {
+  final DateTime date;
+
+  const _TimeAgoText({Key key, this.date}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<int>(
+        stream: Stream.periodic(Duration(seconds: 1)),
+        builder: (context, _) => Text(timeago.format(date)),
       );
 }
