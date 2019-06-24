@@ -141,6 +141,7 @@ class _ArticleListView extends StatelessWidget {
                                   spacing: 8.0,
                                   alignment: WrapAlignment.start,
                                   children: snapshot.data[index].tags
+                                      .where((t) => t.isNotEmpty)
                                       .map((t) => ActionChip(
                                             label: Text(t),
                                             onPressed: () {},
