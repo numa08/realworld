@@ -71,15 +71,19 @@ class PostBloc implements Bloc {
           .pipe(_editingArticleController);
     }
 
-    Article newArticle;
     String inputtedTitle;
     String inputtedDescription;
     String inputtedBody;
+    String inputtedTag;
 
-    _inputTitleController.stream.listen((t) => inputtedTitle = t);
-    _inputDescriptionController.stream.listen((t) => inputtedDescription = t);
-    _inputBodyController.stream.listen((t) => inputtedBody = t);
-
+    StreamGroup.merge([initialTitle, _inputTitleController.stream])
+        .listen((t) => inputtedTitle = t);
+    StreamGroup.merge([initialDescription, _inputDescriptionController.stream])
+        .listen((t) => inputtedDescription = t);
+    StreamGroup.merge([initialBody, _inputBodyController.stream])
+        .listen((t) => inputtedBody = t);
+    StreamGroup.merge([initialTag, _inputTagController.stream])
+        .listen((t) => inputtedTag = t);
     _titleFocusLostController.stream
         .map((_) => _validate(inputtedTitle) ? null : "Title can't be null")
         .pipe(_titleErrorController);
@@ -90,20 +94,6 @@ class PostBloc implements Bloc {
     _bodyFocusLostController.stream
         .map((_) => _validate(inputtedBody) ? null : "Body can't be null")
         .pipe(_bodyErrorController);
-
-    StreamZip([
-      StreamGroup.merge([initialTitle, _inputTitleController.stream])
-          .where(_validate),
-      StreamGroup.merge(
-              [initialDescription, _inputDescriptionController.stream])
-          .where(_validate),
-      StreamGroup.merge([initialBody, _inputBodyController.stream])
-          .where(_validate),
-      StreamGroup.merge([initialTag, _inputTagController.stream])
-    ]).listen((i) {
-      newArticle = _editingArticle(
-          title: i[0], description: i[1], body: i[2], tag: i[3]);
-    });
 
     String titleError;
     String descriptionError;
@@ -117,16 +107,17 @@ class PostBloc implements Bloc {
     _bodyErrorController.stream.listen((e) => bodyError = e);
 
     _postArticleController.stream.listen((_) {
-      print('on post article');
-      if (newArticle == null) {
-        print('new article is null');
-        return;
-      }
       if (hasError()) {
         print(
             'has error title err $titleError, description error $descriptionError, body error $bodyError');
         return;
       }
+      final newArticle = _editingArticle(
+          title: inputtedTitle,
+          description: inputtedDescription,
+          body: inputtedBody,
+          tag: inputtedTag);
+      print('on post article ${newArticle.toJson()}');
       _articleRepository.post(newArticle);
       _postCompleteController.add(null);
     });
