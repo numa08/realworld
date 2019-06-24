@@ -126,21 +126,21 @@ class PostBloc implements Bloc {
   bool _validate(String value) => value != null && value.isNotEmpty;
 
   @override
-  void dispose() {
+  void dispose() async {
     _accountRepository.dispose();
-    forceClose(_postArticleController);
-    forceClose(_inputTitleController);
-    forceClose(_inputDescriptionController);
-    forceClose(_inputTagController);
-    forceClose(_inputBodyController);
-    forceClose(_editingArticleController);
-    forceClose(_titleErrorController);
-    forceClose(_descriptionErrorController);
-    forceClose(_bodyErrorController);
-    forceClose(_titleFocusLostController);
-    forceClose(_descriptionFocusLostController);
-    forceClose(_bodyFocusLostController);
-    forceClose(_postCompleteController);
+    await _postArticleController.close();
+    await _inputTitleController.close();
+    await _inputDescriptionController.close();
+    await _inputTagController.close();
+    await _inputBodyController.close();
+    await _editingArticleController.close();
+    await _titleFocusLostController.close();
+    await _descriptionFocusLostController.close();
+    await _bodyFocusLostController.close();
+    await _titleErrorController.close();
+    await _descriptionErrorController.close();
+    await _bodyErrorController.close();
+    await _postCompleteController.close();
   }
 
   Article _editingArticle(
@@ -154,12 +154,4 @@ class PostBloc implements Bloc {
           updatedAt: FieldValueNow(),
           authorRef: null,
           tags: tag.split(" "));
-}
-
-Future forceClose(StreamController stream) async {
-  try {
-    return await stream.close();
-  } catch (_) {
-    return null;
-  }
 }
