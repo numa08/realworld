@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class ArticleScene extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final String articleId = ModalRoute.of(context).settings.arguments;
+    final articleId = ModalRoute.of(context).settings.arguments as String;
     print('article id : $articleId');
 
     return BlocProvider(

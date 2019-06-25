@@ -5,10 +5,21 @@ part 'user.g.dart';
 
 @JsonSerializable()
 class User extends Account {
+  User(this.email, this.token, this.username, this.bio, this.image,
+      this.createdAt, this.updatedAt)
+      : super(<dynamic>[token, createdAt, updatedAt]);
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+
+  @override
   final String email;
+  @override
   final String token;
+  @override
   final String username;
+  @override
   final String bio;
+  @override
   final Uri image;
   @JsonKey()
   @FireDatetimeJsonConverter()
@@ -16,12 +27,6 @@ class User extends Account {
   @JsonKey()
   @FireDatetimeJsonConverter()
   final FireDateTime updatedAt;
-
-  User(this.email, this.token, this.username, this.bio, this.image,
-      this.createdAt, this.updatedAt)
-      : super([token, createdAt, updatedAt]);
-
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
 

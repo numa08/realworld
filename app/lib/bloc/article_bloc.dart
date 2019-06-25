@@ -7,19 +7,6 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 
 class ArticleBloc extends Bloc {
-  final AccountRepository accountRepository;
-  final ArticleRepository articleRepository;
-  final UserRepository userRepository;
-  final String articleId;
-
-  final StreamController<Article> _articleStreamController =
-      StreamController.broadcast();
-  final StreamController<User> _userStreamController =
-      StreamController.broadcast();
-  StreamSubscription _userSubscription;
-
-  Stream<Article> get article => _articleStreamController.stream;
-
   ArticleBloc(this.accountRepository, this.articleRepository,
       this.userRepository, this.articleId) {
     articleRepository
@@ -27,14 +14,23 @@ class ArticleBloc extends Bloc {
         .listen(_articleStreamController.add);
 
     _articleStreamController.stream.where((a) => a != null).listen((a) {
-      debugPrint("find article ${a.toJson()}");
-      if (_userSubscription == null) {
-        _userSubscription = userRepository
-            .findUser(a.authorRef)
-            .listen(_userStreamController.add);
-      }
+      debugPrint('find article ${a.toJson()}');
+      _userSubscription ??= userRepository
+          .findUser(a.authorRef)
+          .listen(_userStreamController.add);
     });
   }
+
+  final AccountRepository accountRepository;
+  final ArticleRepository articleRepository;
+  final UserRepository userRepository;
+  final String articleId;
+  final StreamController<Article> _articleStreamController =
+      StreamController.broadcast();
+  final StreamController<User> _userStreamController =
+      StreamController.broadcast();
+  StreamSubscription _userSubscription;
+  Stream<Article> get article => _articleStreamController.stream;
 
   @override
   void dispose() async {

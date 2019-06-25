@@ -14,7 +14,7 @@ class SignInScreen extends StatelessWidget {
           });
           return Scaffold(
             appBar: AppBar(
-              title: Text('conduit'),
+              title: const Text('conduit'),
             ),
             body: _Home(
                 isSignInProgress: bloc.isSignInProgress,
@@ -25,11 +25,11 @@ class SignInScreen extends StatelessWidget {
 }
 
 class _Home extends StatelessWidget {
-  final Stream<bool> isSignInProgress;
-  final VoidCallback onTapSignInWithGoogle;
-
   const _Home({Key key, this.isSignInProgress, this.onTapSignInWithGoogle})
       : super(key: key);
+
+  final Stream<bool> isSignInProgress;
+  final VoidCallback onTapSignInWithGoogle;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<bool>(
@@ -38,13 +38,13 @@ class _Home extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.data) {
             return Center(
-              child: CircularProgressIndicator(),
+              child: const CircularProgressIndicator(),
             );
           } else {
             return Center(
                 child: MaterialButton(
               onPressed: onTapSignInWithGoogle,
-              child: Text('Sign in with google'),
+              child: const Text('Sign in with google'),
             ));
           }
         },

@@ -18,7 +18,7 @@ class TopScene extends StatelessWidget {
             TopBloc(AccountRepository(), ArticleRepository(), UserRepository()),
         child: Builder(
           builder: (context) {
-            final TopBloc bloc = BlocProvider.of(context);
+            final bloc = BlocProvider.of<TopBloc>(context);
             bloc.fetchAccount.add(null);
             return _TopBody(
               bloc: bloc,
@@ -29,9 +29,9 @@ class TopScene extends StatelessWidget {
 }
 
 class _TopBody extends StatefulWidget {
-  final TopBloc bloc;
-
   const _TopBody({Key key, this.bloc}) : super(key: key);
+
+  final TopBloc bloc;
 
   @override
   State<StatefulWidget> createState() => _TopBodyState();
@@ -44,7 +44,7 @@ class _TopBodyState extends State<_TopBody> {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Text('conduit'),
+        title: const Text('conduit'),
       ),
       body: _ArticleListView(
           articleStream: widget.bloc.articles, userStream: widget.bloc.user),
@@ -69,7 +69,7 @@ class _TopBodyState extends State<_TopBody> {
       setState(() {
         _moveToAddArticleSubscription =
             widget.bloc.moveToAddArticle.listen((_) {
-          Navigator.push(
+          Navigator.push<MaterialPageRoute>(
               context, MaterialPageRoute(builder: (_) => PostScene()));
         });
       });
@@ -86,24 +86,24 @@ class _TopBodyState extends State<_TopBody> {
 }
 
 class _ArticleListView extends StatelessWidget {
-  final Stream<List<Article>> articleStream;
-  final Stream<User> Function(String) userStream;
-
   const _ArticleListView(
       {Key key, @required this.articleStream, @required this.userStream})
       : super(key: key);
+
+  final Stream<List<Article>> articleStream;
+  final Stream<User> Function(String) userStream;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<List<Article>>(
       stream: articleStream,
       builder: (context, snapshot) {
         if (snapshot.data == null) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: const CircularProgressIndicator());
         }
         return ListView.builder(
             itemCount: snapshot.data.length,
             itemBuilder: (context, index) => GestureDetector(
-                  onTap: () => Navigator.push(
+                  onTap: () => Navigator.push<MaterialPageRoute>(
                       context,
                       MaterialPageRoute(
                           builder: (_) => ArticleScene(),
@@ -111,7 +111,7 @@ class _ArticleListView extends StatelessWidget {
                               arguments: snapshot.data[index].id))),
                   child: Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(8),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.max,
@@ -119,7 +119,7 @@ class _ArticleListView extends StatelessWidget {
                           AccountAvatar(
                             account: userStream(snapshot.data[index].authorRef),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 8,
                           ),
                           Column(
@@ -129,11 +129,11 @@ class _ArticleListView extends StatelessWidget {
                             children: [
                               Text(snapshot.data[index].title,
                                   style: Theme.of(context).textTheme.title),
-                              SizedBox(
+                              const SizedBox(
                                 height: 8,
                               ),
                               Wrap(
-                                spacing: 4.0,
+                                spacing: 4,
                                 children: [
                                   AccountNameLabel(
                                     account: userStream(
@@ -146,7 +146,7 @@ class _ArticleListView extends StatelessWidget {
                                 ],
                               ),
                               Wrap(
-                                  spacing: 8.0,
+                                  spacing: 8,
                                   alignment: WrapAlignment.start,
                                   children: snapshot.data[index].tags
                                       .where((t) => t.isNotEmpty)
@@ -166,11 +166,11 @@ class _ArticleListView extends StatelessWidget {
 }
 
 class _AddArticleButton extends StatelessWidget {
-  final Stream<Account> account;
-  final VoidCallback onTapAdd;
-
   const _AddArticleButton({Key key, this.account, this.onTapAdd})
       : super(key: key);
+
+  final Stream<Account> account;
+  final VoidCallback onTapAdd;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<bool>(
@@ -180,15 +180,15 @@ class _AddArticleButton extends StatelessWidget {
             visible: snapshot.data,
             child: FloatingActionButton(
               onPressed: onTapAdd,
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
             )),
       );
 }
 
 class _TimeAgoText extends StatelessWidget {
-  final DateTime date;
-
   const _TimeAgoText({Key key, this.date}) : super(key: key);
+
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<int>(

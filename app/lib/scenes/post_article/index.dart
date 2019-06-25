@@ -19,9 +19,9 @@ class PostScene extends StatelessWidget {
 }
 
 class _PostBody extends StatefulWidget {
-  final PostBloc bloc;
-
   const _PostBody({Key key, this.bloc}) : super(key: key);
+
+  final PostBloc bloc;
 
   @override
   State<StatefulWidget> createState() => _PostBodyState();
@@ -33,10 +33,10 @@ class _PostBodyState extends State<_PostBody> {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Text('conduit'),
+        title: const Text('conduit'),
         actions: [
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: () => widget.bloc.postArticle.add(null),
           )
         ],
@@ -65,9 +65,9 @@ class _PostBodyState extends State<_PostBody> {
 class _Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var bloc = BlocProvider.of<PostBloc>(context);
+    final bloc = BlocProvider.of<PostBloc>(context);
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: Column(mainAxisSize: MainAxisSize.max, children: [
         _StreamTextField(
           initialText: bloc.initialTitle,
@@ -103,7 +103,7 @@ class _Home extends StatelessWidget {
         ),
         _StreamTextField(
           initialText: bloc.initialTag,
-          errorText: Stream.empty(),
+          errorText: const Stream.empty(),
           inputtedText: bloc.inputTag,
           hintText: 'Tag',
           style: Theme.of(context).textTheme.subtitle,
@@ -115,17 +115,6 @@ class _Home extends StatelessWidget {
 }
 
 class _StreamTextField extends StatefulWidget {
-  final Stream<String> initialText;
-  final Stream<String> errorText;
-  final Sink<String> inputtedText;
-  final Sink<void> focusLost;
-  final TextStyle style;
-  final InputBorder border;
-  final String labelText;
-  final String hintText;
-  final TextInputType keyboardType;
-  final bool expanded;
-
   const _StreamTextField({
     Key key,
     @required this.initialText,
@@ -140,6 +129,17 @@ class _StreamTextField extends StatefulWidget {
     this.expanded,
   }) : super(key: key);
 
+  final Stream<String> initialText;
+  final Stream<String> errorText;
+  final Sink<String> inputtedText;
+  final Sink<void> focusLost;
+  final TextStyle style;
+  final InputBorder border;
+  final String labelText;
+  final String hintText;
+  final TextInputType keyboardType;
+  final bool expanded;
+
   @override
   State<StatefulWidget> createState() => _StreamTextFieldState();
 }
@@ -148,7 +148,7 @@ class _StreamTextFieldState extends State<_StreamTextField> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
   String _errorText;
-  final _subscriptions = List<StreamSubscription>();
+  final _subscriptions = <StreamSubscription>[];
 
   @override
   void initState() {
@@ -172,7 +172,9 @@ class _StreamTextFieldState extends State<_StreamTextField> {
 
   @override
   void dispose() {
-    _subscriptions.forEach((s) => s.cancel());
+    for (final s in _subscriptions) {
+      s.cancel();
+    }
     _focusNode.dispose();
     super.dispose();
   }

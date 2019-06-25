@@ -4,24 +4,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 abstract class ArticleRepository {
+  factory ArticleRepository() =>
+      _FirestoreArticleRepository(Firestore.instance, FirebaseAuth.instance);
+
   Stream<List<Article>> get articles;
   Future<void> post(Article article);
   Stream<Article> findArticle(String articleRef);
-
-  factory ArticleRepository() =>
-      _FirestoreArticleRepository(Firestore.instance, FirebaseAuth.instance);
 }
 
 class _FirestoreArticleRepository implements ArticleRepository {
+  _FirestoreArticleRepository(this._firestore, this._firebaseAuth);
+
   final Firestore _firestore;
   final FirebaseAuth _firebaseAuth;
-
-  _FirestoreArticleRepository(this._firestore, this._firebaseAuth);
 
   @override
   Future<void> post(Article article) async {
     final authorRef = article.authorRef ??
-        await _firebaseAuth.currentUser().then((u) => "/users/${u.uid}");
+        await _firebaseAuth.currentUser().then((u) => '/users/${u.uid}');
 
     final id = article.id ??
         _firestore
@@ -38,22 +38,21 @@ class _FirestoreArticleRepository implements ArticleRepository {
         .document(id)
         .setData(data, merge: true);
     debugPrint('post article to $authorRef/articles/$id');
-    var tags = article.tags;
+    final tags = article.tags;
     if (tags.isEmpty) {
       return;
     }
     final batch = _firestore.batch();
-    tags
+    for (final tag in tags
         .where((t) => t.isNotEmpty)
-        .map((t) => Tag('$authorRef/articles/$id', t))
-        .forEach((tag) {
+        .map((t) => Tag('$authorRef/articles/$id', t))) {
       batch.setData(
           _firestore
               .document(tag.articleRef)
               .collection('tags')
               .document(tag.tag),
           tag.toJson());
-    });
+    }
     await batch.commit();
   }
 
@@ -66,7 +65,7 @@ class _FirestoreArticleRepository implements ArticleRepository {
           .map((d) {
             try {
               return Article.fromJson(d.data);
-            } catch (_) {
+            } on Exception catch (_) {
               return null;
             }
           })
@@ -82,7 +81,7 @@ class _FirestoreArticleRepository implements ArticleRepository {
           .map((d) {
         try {
           return Article.fromJson(d.data);
-        } catch (_) {
+        } on Exception catch (_) {
           return null;
         }
       }).asBroadcastStream();

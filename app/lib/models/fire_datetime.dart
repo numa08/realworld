@@ -11,10 +11,11 @@ class FieldValueNow extends FireDateTime {
 }
 
 class TimestampDatetime extends FireDateTime {
-  final Timestamp timestamp;
-
   TimestampDatetime(this.timestamp);
 
+  final Timestamp timestamp;
+
+  @override
   DateTime get dateTime => timestamp.toDate();
 }
 
@@ -23,15 +24,16 @@ class FireDatetimeJsonConverter
   const FireDatetimeJsonConverter();
 
   @override
-  // ignore: missing_return
-  FireDateTime fromJson(json) {
+  FireDateTime fromJson(dynamic json) {
     if (json is Timestamp) {
       return TimestampDatetime(json);
     }
+    throw ArgumentError(
+        ['FieldValue.serverTimestamp should not be serialized.']);
   }
 
   @override
-  toJson(FireDateTime object) {
+  dynamic toJson(FireDateTime object) {
     if (object is FieldValueNow) {
       return FieldValue.serverTimestamp();
     }

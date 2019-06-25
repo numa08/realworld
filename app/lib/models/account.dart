@@ -1,18 +1,18 @@
 import 'package:equatable/equatable.dart';
 
 abstract class Account extends Equatable {
+  Account([List<dynamic> props = const <dynamic>[]]) : super(props);
+
   String get email;
   String get token;
   String get username;
   String get bio;
   Uri get image;
   bool get isAnonymous;
-
-  Account([List props = const []]) : super(props);
 }
 
 class AnonymousUser extends Account {
-  AnonymousUser(this.token) : super([token]);
+  AnonymousUser(this.token) : super(<dynamic>[token]);
 
   @override
   String get bio => 'guest';

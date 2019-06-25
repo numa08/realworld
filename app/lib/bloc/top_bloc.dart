@@ -5,6 +5,20 @@ import 'package:app/repositories/repositories.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 
 class TopBloc implements Bloc {
+  TopBloc(
+      this._accountRepository, this._articleRepository, this._userRepository)
+      : assert(_accountRepository != null),
+        assert(_articleRepository != null),
+        assert(_userRepository != null) {
+    _signInWithAnonymousController.stream.listen((_) async {
+      await _accountRepository.signInAnonymously();
+    });
+    _fetchAccountController.stream.listen((_) => _accountRepository.fetch());
+    _signOutController.stream.listen((_) async {
+      await _accountRepository.signOut();
+    });
+  }
+
   final AccountRepository _accountRepository;
   final ArticleRepository _articleRepository;
   final UserRepository _userRepository;
@@ -25,20 +39,6 @@ class TopBloc implements Bloc {
   Sink<void> get signOut => _signOutController.sink;
   Sink<void> get fetchAccount => _fetchAccountController.sink;
   Sink<void> get tapAddArticle => _addArticleController.sink;
-
-  TopBloc(
-      this._accountRepository, this._articleRepository, this._userRepository)
-      : assert(_accountRepository != null),
-        assert(_articleRepository != null),
-        assert(_userRepository != null) {
-    _signInWithAnonymousController.stream.listen((_) async {
-      await _accountRepository.signInAnonymously();
-    });
-    _fetchAccountController.stream.listen((_) => _accountRepository.fetch());
-    _signOutController.stream.listen((_) async {
-      await _accountRepository.signOut();
-    });
-  }
 
   Stream<User> user(String userRef) => _userRepository.findUser(userRef);
 

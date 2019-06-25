@@ -2,9 +2,8 @@ import 'package:app/models/models.dart';
 import 'package:flutter/material.dart';
 
 class AccountAvatar extends StatelessWidget {
-  final Stream<Account> account;
-
   const AccountAvatar({Key key, this.account}) : super(key: key);
+  final Stream<Account> account;
 
   @override
   Widget build(BuildContext context) => StreamBuilder<Account>(
@@ -12,7 +11,7 @@ class AccountAvatar extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.data == null) {
             return Builder(
-                builder: (context) => CircleAvatar(
+                builder: (context) => const CircleAvatar(
                       minRadius: 24,
                       maxRadius: 24,
                       backgroundColor: Colors.grey,

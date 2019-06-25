@@ -13,10 +13,10 @@ class TopDrawer extends StatelessWidget {
             TopBloc(AccountRepository(), ArticleRepository(), UserRepository()),
         child: Builder(
           builder: (context) {
-            var bloc = BlocProvider.of<TopBloc>(context);
+            final bloc = BlocProvider.of<TopBloc>(context);
             bloc.fetchAccount.add(null);
             bloc.moveToSignIn.listen((_) {
-              Navigator.push(
+              Navigator.push<MaterialPageRoute>(
                   context,
                   MaterialPageRoute(
                       builder: (context) => SignInScreen(),
@@ -39,13 +39,13 @@ class TopDrawer extends StatelessWidget {
 }
 
 class _TopDrawerHeader extends StatelessWidget {
-  final Stream<Account> account;
-  final VoidCallback onTapSignIn;
-  final VoidCallback onTapSignOut;
-
   const _TopDrawerHeader(
       {Key key, this.account, this.onTapSignIn, this.onTapSignOut})
       : super(key: key);
+
+  final Stream<Account> account;
+  final VoidCallback onTapSignIn;
+  final VoidCallback onTapSignOut;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -62,7 +62,7 @@ class _TopDrawerHeader extends StatelessWidget {
                 AccountAvatar(
                   account: account,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 8,
                 ),
                 AccountNameLabel(
@@ -86,12 +86,12 @@ class _TopDrawerHeader extends StatelessWidget {
             }
             if (snapshot.data.isAnonymous) {
               return FlatButton(
-                child: Text('Sign In/Up'),
+                child: const Text('Sign In/Up'),
                 onPressed: onTapSignIn,
               );
             }
             return FlatButton(
-              child: Text('Sign Out'),
+              child: const Text('Sign Out'),
               onPressed: onTapSignOut,
             );
           });

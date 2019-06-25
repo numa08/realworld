@@ -7,6 +7,11 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class AccountRepository {
+  factory AccountRepository() {
+    return _FirebaseAccountRepository(
+        Firestore.instance, FirebaseAuth.instance, GoogleSignIn());
+  }
+
   Stream<Account> get account;
   Stream<AuthState> get authState;
 
@@ -15,21 +20,16 @@ abstract class AccountRepository {
   Future<void> signInWithGoogle();
   Future<void> signOut();
   Future<void> dispose();
-
-  factory AccountRepository() {
-    return new _FirebaseAccountRepository(
-        Firestore.instance, FirebaseAuth.instance, GoogleSignIn());
-  }
 }
 
 class _FirebaseAccountRepository implements AccountRepository {
+  _FirebaseAccountRepository(
+      this._firestore, this._firebaseAuth, this._googleSignIn);
+
   final Firestore _firestore;
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
   StreamSubscription<User> _userSubscription;
-
-  _FirebaseAccountRepository(
-      this._firestore, this._firebaseAuth, this._googleSignIn);
 
   final StreamController<Account> _accountStream = StreamController.broadcast();
 
@@ -81,11 +81,11 @@ class _FirebaseAccountRepository implements AccountRepository {
       return;
     }
     // sign up
-    var user = User(
+    final user = User(
         firebaseUser.email,
         firebaseUser.uid,
         firebaseUser.displayName,
-        "",
+        '',
         Uri.parse(firebaseUser.photoUrl),
         FieldValueNow(),
         FieldValueNow());
@@ -118,8 +118,7 @@ class _FirebaseAccountRepository implements AccountRepository {
   }
 
   Future<User> _fetchUser(String token) async {
-    final DocumentSnapshot userData =
-        await _firestore.collection('users').document(token).get();
+    final userData = await _firestore.collection('users').document(token).get();
     if (userData == null || userData.data == null) {
       return null;
     }

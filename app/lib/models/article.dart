@@ -1,11 +1,44 @@
 import 'package:app/models/models.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'article.g.dart';
 
 @JsonSerializable()
 class Article extends Equatable {
+  Article(
+      {this.id,
+      @required this.slug,
+      @required this.title,
+      @required this.description,
+      @required this.body,
+      @required this.createdAt,
+      @required this.updatedAt,
+      this.authorRef,
+      @required this.tags})
+      : assert(slug != null),
+        assert(title != null),
+        assert(description != null),
+        assert(body != null),
+        assert(createdAt != null),
+        assert(updatedAt != null),
+        assert(tags != null);
+
+  factory Article.fromJson(Map<String, dynamic> json) =>
+      _$ArticleFromJson(json);
+
+  factory Article.empty(Account author) => Article(
+      id: null,
+      slug: '',
+      title: '',
+      description: '',
+      body: '',
+      createdAt: FieldValueNow(),
+      updatedAt: FieldValueNow(),
+      authorRef: '/users/${author.token}',
+      tags: []);
+
   final String id;
   final String slug;
   final String title;
@@ -19,24 +52,6 @@ class Article extends Equatable {
   final FireDateTime updatedAt;
   final String authorRef;
   final List<String> tags;
-
-  Article(
-      {this.id,
-      this.slug,
-      this.title,
-      this.description,
-      this.body,
-      this.createdAt,
-      this.updatedAt,
-      this.authorRef,
-      this.tags})
-      : assert(slug != null),
-        assert(title != null),
-        assert(description != null),
-        assert(body != null),
-        assert(createdAt != null),
-        assert(updatedAt != null),
-        assert(tags != null);
 
   Article copyWith(
           {String id,
@@ -59,19 +74,5 @@ class Article extends Equatable {
           authorRef: authorRef ?? this.authorRef,
           tags: tags ?? this.tags);
 
-  factory Article.fromJson(Map<String, dynamic> json) =>
-      _$ArticleFromJson(json);
-
   Map<String, dynamic> toJson() => _$ArticleToJson(this);
-
-  factory Article.empty(Account author) => Article(
-      id: null,
-      slug: "",
-      title: "",
-      description: "",
-      body: "",
-      createdAt: FieldValueNow(),
-      updatedAt: FieldValueNow(),
-      authorRef: "/users/${author.token}",
-      tags: []);
 }
