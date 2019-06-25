@@ -75,5 +75,15 @@ class _FirestoreArticleRepository implements ArticleRepository {
       .asBroadcastStream();
 
   @override
-  Stream<Article> findArticle(String articleRef) => Stream.empty();
+  Stream<Article> findArticle(String articleId) => _firestore
+          .collection('articles')
+          .document(articleId)
+          .snapshots()
+          .map((d) {
+        try {
+          return Article.fromJson(d.data);
+        } catch (_) {
+          return null;
+        }
+      }).asBroadcastStream();
 }

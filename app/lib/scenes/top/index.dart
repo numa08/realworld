@@ -5,6 +5,7 @@ import 'package:app/components/components.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
 import 'package:app/scenes/post_article/index.dart';
+import 'package:app/scenes/scenes.dart';
 import 'package:app/scenes/top/drawer.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +103,12 @@ class _ArticleListView extends StatelessWidget {
         return ListView.builder(
             itemCount: snapshot.data.length,
             itemBuilder: (context, index) => GestureDetector(
-                  onTap: () => print("tap $index"),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ArticleScene(),
+                          settings: RouteSettings(
+                              arguments: snapshot.data[index].id))),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
