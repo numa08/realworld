@@ -31,6 +31,15 @@ class _PostBodyState extends State<_PostBody> {
   StreamSubscription _onPostCompleteSubscription;
 
   @override
+  void initState() {
+    super.initState();
+    final bloc = BlocProvider.of<PostBloc>(context);
+    _onPostCompleteSubscription = bloc.postComplete.listen((_) {
+      Navigator.pop(context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('conduit'),
@@ -42,18 +51,6 @@ class _PostBodyState extends State<_PostBody> {
         ],
       ),
       body: SafeArea(child: _Home()));
-
-  @override
-  void didUpdateWidget(_PostBody oldWidget) {
-    if (_onPostCompleteSubscription == null) {
-      setState(() {
-        _onPostCompleteSubscription = widget.bloc.postComplete.listen((_) {
-          Navigator.pop(context);
-        });
-      });
-    }
-    super.didUpdateWidget(oldWidget);
-  }
 
   @override
   void dispose() {

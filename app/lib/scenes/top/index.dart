@@ -42,6 +42,21 @@ class _TopBodyState extends State<_TopBody> {
   StreamSubscription _moveToAddArticleSubscription;
 
   @override
+  void initState() {
+    super.initState();
+    final bloc = BlocProvider.of<TopBloc>(context);
+    _authStateChangedSubscription = widget.bloc.authState.listen((state) {
+      if (state is NotSignedIn) {
+        bloc.signInWithAnonymous.add(null);
+      }
+    });
+    _moveToAddArticleSubscription = widget.bloc.moveToAddArticle.listen((_) {
+      Navigator.push<MaterialPageRoute>(
+          context, MaterialPageRoute(builder: (_) => PostScene()));
+    });
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('conduit'),
@@ -53,29 +68,6 @@ class _TopBodyState extends State<_TopBody> {
         account: widget.bloc.account,
         onTapAdd: () => widget.bloc.tapAddArticle.add(null),
       ));
-
-  @override
-  void didUpdateWidget(_TopBody oldWidget) {
-    if (_authStateChangedSubscription == null) {
-      setState(() {
-        _authStateChangedSubscription = widget.bloc.authState.listen((state) {
-          if (state is NotSignedIn) {
-            widget.bloc.signInWithAnonymous.add(null);
-          }
-        });
-      });
-    }
-    if (_moveToAddArticleSubscription == null) {
-      setState(() {
-        _moveToAddArticleSubscription =
-            widget.bloc.moveToAddArticle.listen((_) {
-          Navigator.push<MaterialPageRoute>(
-              context, MaterialPageRoute(builder: (_) => PostScene()));
-        });
-      });
-    }
-    super.didUpdateWidget(oldWidget);
-  }
 
   @override
   void dispose() {
