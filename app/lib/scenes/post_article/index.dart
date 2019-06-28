@@ -105,6 +105,7 @@ class _Home extends StatelessWidget {
           hintText: 'Tag',
           style: Theme.of(context).textTheme.subtitle,
           border: UnderlineInputBorder(),
+          maxLines: 1,
         )
       ]),
     );
@@ -112,19 +113,20 @@ class _Home extends StatelessWidget {
 }
 
 class _StreamTextField extends StatefulWidget {
-  const _StreamTextField({
-    Key key,
-    @required this.initialText,
-    @required this.errorText,
-    @required this.inputtedText,
-    this.focusLost,
-    this.style,
-    this.border,
-    this.labelText,
-    this.hintText,
-    this.keyboardType,
-    this.expanded,
-  }) : super(key: key);
+  const _StreamTextField(
+      {Key key,
+      @required this.initialText,
+      @required this.errorText,
+      @required this.inputtedText,
+      this.focusLost,
+      this.style,
+      this.border,
+      this.labelText,
+      this.hintText,
+      this.keyboardType,
+      this.expanded,
+      this.maxLines})
+      : super(key: key);
 
   final Stream<String> initialText;
   final Stream<String> errorText;
@@ -136,6 +138,7 @@ class _StreamTextField extends StatefulWidget {
   final String hintText;
   final TextInputType keyboardType;
   final bool expanded;
+  final int maxLines;
 
   @override
   State<StatefulWidget> createState() => _StreamTextFieldState();
@@ -181,7 +184,7 @@ class _StreamTextFieldState extends State<_StreamTextField> {
         focusNode: _focusNode,
         onChanged: widget.inputtedText.add,
         expands: widget.expanded ?? false,
-        maxLines: null,
+        maxLines: widget.maxLines,
         minLines: null,
         style: widget.style,
         controller: _controller,
