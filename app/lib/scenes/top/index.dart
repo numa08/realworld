@@ -88,18 +88,19 @@ class _ArticleListView extends StatelessWidget {
       {Key key, @required this.articleStream, @required this.userStream})
       : super(key: key);
 
-  final Stream<List<Article>> articleStream;
+  final Stream<List<ArticleWithHeroTag>> articleStream;
   final Stream<User> Function(String) userStream;
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<TopBloc>(context);
-    return StreamBuilder<List<Article>>(
+    return StreamBuilder<List<ArticleWithHeroTag>>(
         stream: articleStream,
         builder: (context, snapshot) {
           if (snapshot.data == null) {
             return Center(child: const CircularProgressIndicator());
           }
+          final articles = snapshot.data;
           return ListView.builder(
               itemCount: snapshot.data.length,
               itemBuilder: (context, index) => GestureDetector(
@@ -113,7 +114,7 @@ class _ArticleListView extends StatelessWidget {
                           children: [
                             AccountAvatar(
                               account:
-                                  userStream(snapshot.data[index].authorRef),
+                                  userStream(articles[index].article.authorRef),
                             ),
                             const SizedBox(
                               width: 8,
@@ -124,8 +125,8 @@ class _ArticleListView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Hero(
-                                  tag: _heroTag(snapshot.data[index], index),
-                                  child: Text(snapshot.data[index].title,
+                                  tag: articles[index].titleHero,
+                                  child: Text(articles[index].article.title,
                                       style: Theme.of(context).textTheme.title),
                                 ),
                                 const SizedBox(
@@ -136,18 +137,22 @@ class _ArticleListView extends StatelessWidget {
                                   children: [
                                     AccountNameLabel(
                                       account: userStream(
-                                          snapshot.data[index].authorRef),
+                                          articles[index].article.authorRef),
                                     ),
                                     _TimeAgoText(
-                                      date: snapshot
-                                          .data[index].createdAt.dateTime,
+                                      date: articles[index]
+                                          .article
+                                          .createdAt
+                                          .dateTime,
                                     )
                                   ],
                                 ),
                                 Wrap(
                                     spacing: 8,
                                     alignment: WrapAlignment.start,
-                                    children: snapshot.data[index].tags
+                                    children: articles[index]
+                                        .article
+                                        .tags
                                         .where((t) => t.isNotEmpty)
                                         .map((t) => ActionChip(
                                               label: Text(t),

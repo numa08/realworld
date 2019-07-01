@@ -40,7 +40,6 @@ class TopBloc implements Bloc {
 
   Stream<Account> get account => _accountRepository.account;
   Stream<AuthState> get authState => _accountRepository.authState;
-  Stream<List<Article>> get articles => _articleRepository.articles;
   Stream<void> get moveToSignIn => _signInController.stream;
   Stream<void> get moveToAddArticle => _addArticleController.stream;
   Sink<void> get signInWithAnonymous => _signInWithAnonymousController.sink;
@@ -51,6 +50,17 @@ class TopBloc implements Bloc {
   Sink<int> get tapArticle => _tapArticleController.sink;
   Stream<ArticleSceneArguments> get moveToArticle =>
       _showArticleController.stream;
+  Stream<List<ArticleWithHeroTag>> get articles =>
+      _articleRepository.articles.map((list) {
+        return list
+            .asMap()
+            .map<int, ArticleWithHeroTag>((index, article) {
+              final heroTag = _heroTag(article, index);
+              return MapEntry(index, ArticleWithHeroTag(article, heroTag));
+            })
+            .values
+            .toList();
+      });
 
   Stream<User> user(String userRef) => _userRepository.findUser(userRef);
 
@@ -73,4 +83,10 @@ class TopBloc implements Bloc {
           articleId: articles[index].id);
 
   String _heroTag(Article article, int index) => '${article.title}-$index';
+}
+
+class ArticleWithHeroTag {
+  ArticleWithHeroTag(this.article, this.titleHero);
+  final Article article;
+  final String titleHero;
 }
