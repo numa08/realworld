@@ -20,19 +20,13 @@ class TopScene extends StatelessWidget {
           builder: (context) {
             final bloc = BlocProvider.of<TopBloc>(context);
             bloc.fetchAccount.add(null);
-            return _TopBody(
-              bloc: bloc,
-            );
+            return _TopBody();
           },
         ),
       );
 }
 
 class _TopBody extends StatefulWidget {
-  const _TopBody({Key key, this.bloc}) : super(key: key);
-
-  final TopBloc bloc;
-
   @override
   State<StatefulWidget> createState() => _TopBodyState();
 }
@@ -45,29 +39,32 @@ class _TopBodyState extends State<_TopBody> {
   void initState() {
     super.initState();
     final bloc = BlocProvider.of<TopBloc>(context);
-    _authStateChangedSubscription = widget.bloc.authState.listen((state) {
+    _authStateChangedSubscription = bloc.authState.listen((state) {
       if (state is NotSignedIn) {
         bloc.signInWithAnonymous.add(null);
       }
     });
-    _moveToAddArticleSubscription = widget.bloc.moveToAddArticle.listen((_) {
+    _moveToAddArticleSubscription = bloc.moveToAddArticle.listen((_) {
       Navigator.push<MaterialPageRoute>(
           context, MaterialPageRoute(builder: (_) => PostScene()));
     });
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: const Text('conduit'),
-      ),
-      body: _ArticleListView(
-          articleStream: widget.bloc.articles, userStream: widget.bloc.user),
-      drawer: TopDrawer(),
-      floatingActionButton: _AddArticleButton(
-        account: widget.bloc.account,
-        onTapAdd: () => widget.bloc.tapAddArticle.add(null),
-      ));
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<TopBloc>(context);
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('conduit'),
+        ),
+        body: _ArticleListView(
+            articleStream: bloc.articles, userStream: bloc.user),
+        drawer: TopDrawer(),
+        floatingActionButton: _AddArticleButton(
+          account: bloc.account,
+          onTapAdd: () => bloc.tapAddArticle.add(null),
+        ));
+  }
 
   @override
   void dispose() {
