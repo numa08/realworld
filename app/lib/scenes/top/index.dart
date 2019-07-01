@@ -97,7 +97,10 @@ class _ArticleListView extends StatelessWidget {
                       NoAnimationMaterialPageRoute(
                           builder: (_) => ArticleScene(),
                           settings: RouteSettings(
-                              arguments: snapshot.data[index].id))),
+                              arguments: ArticleSceneArguments(
+                                  heroTag:
+                                      _heroTag(snapshot.data[index], index),
+                                  articleId: snapshot.data[index].id)))),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8),
@@ -116,8 +119,11 @@ class _ArticleListView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text(snapshot.data[index].title,
-                                  style: Theme.of(context).textTheme.title),
+                              Hero(
+                                tag: _heroTag(snapshot.data[index], index),
+                                child: Text(snapshot.data[index].title,
+                                    style: Theme.of(context).textTheme.title),
+                              ),
                               const SizedBox(
                                 height: 8,
                               ),
@@ -152,6 +158,8 @@ class _ArticleListView extends StatelessWidget {
                   ),
                 ));
       });
+
+  String _heroTag(Article article, int index) => '${article.title}-$index';
 }
 
 class _AddArticleButton extends StatelessWidget {

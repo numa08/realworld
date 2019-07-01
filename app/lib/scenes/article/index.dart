@@ -4,10 +4,19 @@ import 'package:app/repositories/repositories.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
+class ArticleSceneArguments {
+  ArticleSceneArguments({@required this.heroTag, @required this.articleId});
+  final String heroTag;
+  final String articleId;
+}
+
 class ArticleScene extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final articleId = ModalRoute.of(context).settings.arguments as String;
+    final arguments =
+        ModalRoute.of(context).settings.arguments as ArticleSceneArguments;
+    final articleId = arguments.articleId;
+    final heroTag = arguments.heroTag;
 
     return BlocProvider(
       creator: (_context, _bag) => ArticleBloc(AccountRepository(),
@@ -17,7 +26,9 @@ class ArticleScene extends StatelessWidget {
           appBar: AppBar(
             title: const Text('conduit'),
           ),
-          body: _Body(),
+          body: _Body(
+            heroTag: heroTag,
+          ),
         );
       }),
     );
@@ -25,6 +36,10 @@ class ArticleScene extends StatelessWidget {
 }
 
 class _Body extends StatelessWidget {
+  const _Body({Key key, this.heroTag}) : super(key: key);
+
+  final String heroTag;
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ArticleBloc>(context);
@@ -42,12 +57,15 @@ class _Body extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      data.title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .display1
-                          .merge(TextStyle(color: Colors.black)),
+                    Hero(
+                      tag: heroTag,
+                      child: Text(
+                        data.title,
+                        style: Theme.of(context)
+                            .textTheme
+                            .display1
+                            .merge(TextStyle(color: Colors.black)),
+                      ),
                     ),
                     Text(
                       data.description,
