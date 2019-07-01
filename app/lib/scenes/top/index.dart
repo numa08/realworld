@@ -94,7 +94,7 @@ class _ArticleListView extends StatelessWidget {
             itemBuilder: (context, index) => GestureDetector(
                   onTap: () => Navigator.push<MaterialPageRoute>(
                       context,
-                      MaterialPageRoute(
+                      NoAnimationMaterialPageRoute(
                           builder: (_) => ArticleScene(),
                           settings: RouteSettings(
                               arguments: snapshot.data[index].id))),
