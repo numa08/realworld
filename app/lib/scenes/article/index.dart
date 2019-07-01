@@ -4,17 +4,6 @@ import 'package:app/repositories/repositories.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
-class ArticleSceneArguments {
-  ArticleSceneArguments(
-      {@required this.heroTag,
-      @required this.articleId,
-      @required this.initialArticle});
-  final String heroTag;
-  final String articleId;
-  // We need this for Hero animation
-  final Article initialArticle;
-}
-
 class ArticleScene extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

@@ -40,3 +40,14 @@ class ArticleBloc extends Bloc {
     await _articleStreamController.close();
   }
 }
+
+class ArticleSceneArguments {
+  ArticleSceneArguments(
+      {@required this.heroTag,
+      @required this.articleId,
+      @required this.initialArticle});
+  final String heroTag;
+  final String articleId;
+  // We need this for Hero animation
+  final Article initialArticle;
+}

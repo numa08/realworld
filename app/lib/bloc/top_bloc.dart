@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:app/bloc/bloc.dart';
 import 'package:app/models/models.dart';
 import 'package:app/repositories/repositories.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class TopBloc implements Bloc {
   TopBloc(
@@ -17,6 +19,10 @@ class TopBloc implements Bloc {
     _signOutController.stream.listen((_) async {
       await _accountRepository.signOut();
     });
+    _tapArticleController.stream
+        .transform(combineLatest<int, List<Article>, ArticleSceneArguments>(
+            _articleRepository.articles, _createArgument))
+        .pipe(_showArticleController);
   }
 
   final AccountRepository _accountRepository;
@@ -28,6 +34,9 @@ class TopBloc implements Bloc {
   final _signOutController = StreamController<void>.broadcast();
   final _fetchAccountController = StreamController<void>.broadcast();
   final _addArticleController = StreamController<void>.broadcast();
+  final _tapArticleController = StreamController<int>.broadcast();
+  final _showArticleController =
+      StreamController<ArticleSceneArguments>.broadcast();
 
   Stream<Account> get account => _accountRepository.account;
   Stream<AuthState> get authState => _accountRepository.authState;
@@ -39,6 +48,9 @@ class TopBloc implements Bloc {
   Sink<void> get signOut => _signOutController.sink;
   Sink<void> get fetchAccount => _fetchAccountController.sink;
   Sink<void> get tapAddArticle => _addArticleController.sink;
+  Sink<int> get tapArticle => _tapArticleController.sink;
+  Stream<ArticleSceneArguments> get moveToArticle =>
+      _showArticleController.stream;
 
   Stream<User> user(String userRef) => _userRepository.findUser(userRef);
 
@@ -50,5 +62,15 @@ class TopBloc implements Bloc {
     await _signOutController.close();
     await _fetchAccountController.close();
     await _addArticleController.close();
+    await _tapArticleController.close();
+    await _showArticleController.close();
   }
+
+  ArticleSceneArguments _createArgument(int index, List<Article> articles) =>
+      ArticleSceneArguments(
+          heroTag: _heroTag(articles[index], index),
+          initialArticle: articles[index],
+          articleId: articles[index].id);
+
+  String _heroTag(Article article, int index) => '${article.title}-$index';
 }

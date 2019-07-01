@@ -34,6 +34,7 @@ class _TopBody extends StatefulWidget {
 class _TopBodyState extends State<_TopBody> {
   StreamSubscription _authStateChangedSubscription;
   StreamSubscription _moveToAddArticleSubscription;
+  StreamSubscription _moveToArticleSubscription;
 
   @override
   void initState() {
@@ -47,6 +48,13 @@ class _TopBodyState extends State<_TopBody> {
     _moveToAddArticleSubscription = bloc.moveToAddArticle.listen((_) {
       Navigator.push<MaterialPageRoute>(
           context, MaterialPageRoute(builder: (_) => PostScene()));
+    });
+    _moveToArticleSubscription = bloc.moveToArticle.listen((arg) {
+      Navigator.push<MaterialPageRoute>(
+          context,
+          MaterialPageRoute(
+              builder: (_) => ArticleScene(),
+              settings: RouteSettings(arguments: arg)));
     });
   }
 
@@ -70,6 +78,7 @@ class _TopBodyState extends State<_TopBody> {
   void dispose() {
     _authStateChangedSubscription?.cancel();
     _moveToAddArticleSubscription?.cancel();
+    _moveToArticleSubscription?.cancel();
     super.dispose();
   }
 }
@@ -83,82 +92,77 @@ class _ArticleListView extends StatelessWidget {
   final Stream<User> Function(String) userStream;
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<List<Article>>(
-      stream: articleStream,
-      builder: (context, snapshot) {
-        if (snapshot.data == null) {
-          return Center(child: const CircularProgressIndicator());
-        }
-        return ListView.builder(
-            itemCount: snapshot.data.length,
-            itemBuilder: (context, index) => GestureDetector(
-                  onTap: () => Navigator.push<MaterialPageRoute>(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => ArticleScene(),
-                          settings: RouteSettings(
-                              arguments: ArticleSceneArguments(
-                                  heroTag:
-                                      _heroTag(snapshot.data[index], index),
-                                  articleId: snapshot.data[index].id,
-                                  initialArticle: snapshot.data[index])))),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          AccountAvatar(
-                            account: userStream(snapshot.data[index].authorRef),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Hero(
-                                tag: _heroTag(snapshot.data[index], index),
-                                child: Text(snapshot.data[index].title,
-                                    style: Theme.of(context).textTheme.title),
-                              ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Wrap(
-                                spacing: 4,
-                                children: [
-                                  AccountNameLabel(
-                                    account: userStream(
-                                        snapshot.data[index].authorRef),
-                                  ),
-                                  _TimeAgoText(
-                                    date:
-                                        snapshot.data[index].createdAt.dateTime,
-                                  )
-                                ],
-                              ),
-                              Wrap(
-                                  spacing: 8,
-                                  alignment: WrapAlignment.start,
-                                  children: snapshot.data[index].tags
-                                      .where((t) => t.isNotEmpty)
-                                      .map((t) => ActionChip(
-                                            label: Text(t),
-                                            onPressed: () {},
-                                          ))
-                                      .toList())
-                            ],
-                          ),
-                        ],
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<TopBloc>(context);
+    return StreamBuilder<List<Article>>(
+        stream: articleStream,
+        builder: (context, snapshot) {
+          if (snapshot.data == null) {
+            return Center(child: const CircularProgressIndicator());
+          }
+          return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, index) => GestureDetector(
+                    onTap: () => bloc.tapArticle.add(index),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            AccountAvatar(
+                              account:
+                                  userStream(snapshot.data[index].authorRef),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Hero(
+                                  tag: _heroTag(snapshot.data[index], index),
+                                  child: Text(snapshot.data[index].title,
+                                      style: Theme.of(context).textTheme.title),
+                                ),
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    AccountNameLabel(
+                                      account: userStream(
+                                          snapshot.data[index].authorRef),
+                                    ),
+                                    _TimeAgoText(
+                                      date: snapshot
+                                          .data[index].createdAt.dateTime,
+                                    )
+                                  ],
+                                ),
+                                Wrap(
+                                    spacing: 8,
+                                    alignment: WrapAlignment.start,
+                                    children: snapshot.data[index].tags
+                                        .where((t) => t.isNotEmpty)
+                                        .map((t) => ActionChip(
+                                              label: Text(t),
+                                              onPressed: () {},
+                                            ))
+                                        .toList())
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ));
-      });
+                  ));
+        });
+  }
 
   String _heroTag(Article article, int index) => '${article.title}-$index';
 }
