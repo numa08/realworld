@@ -50,60 +50,69 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ArticleBloc>(context);
-    return StreamBuilder<Article>(
-      stream: bloc.article,
-      initialData: initialArticle,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final data = snapshot.data;
-          return SafeArea(
-              child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
-              child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Hero(
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+        child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              StreamBuilder<String>(
+                stream: bloc.article.map((a) => a.title),
+                // need it for show animation as hero
+                // and stop screen refresh
+                initialData: '${initialArticle.title} ',
+                builder: (context, snapshot) => Hero(
                       tag: heroTag,
                       child: Text(
-                        data.title,
+                        snapshot.data,
                         style: Theme.of(context)
                             .textTheme
                             .display1
                             .merge(TextStyle(color: Colors.black)),
                       ),
                     ),
-                    Text(
-                      data.description,
-                      style: Theme.of(context).textTheme.subtitle,
-                    ),
-                    Wrap(
-                      spacing: 8,
-                      alignment: WrapAlignment.start,
-                      children: data.tags
-                          .where((t) => t.isNotEmpty)
-                          .map((t) => ActionChip(
-                                label: Text(t),
-                                onPressed: () {},
-                              ))
-                          .toList(),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                      data.body,
-                      style: Theme.of(context).textTheme.body1,
-                    )
-                  ]),
-            ),
-          ));
-        } else {
-          return _EmptyView();
-        }
-      },
+              ),
+              StreamBuilder<Article>(
+                stream: bloc.article,
+                builder: (context, snapshot) {
+                  final data = snapshot.data;
+                  if (!snapshot.hasData) {
+                    return _EmptyView();
+                  }
+                  return Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data.description,
+                          style: Theme.of(context).textTheme.subtitle,
+                        ),
+                        Wrap(
+                          spacing: 8,
+                          alignment: WrapAlignment.start,
+                          children: data.tags
+                              .where((t) => t.isNotEmpty)
+                              .map((t) => ActionChip(
+                                    label: Text(t),
+                                    onPressed: () {},
+                                  ))
+                              .toList(),
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Text(
+                          data.body,
+                          style: Theme.of(context).textTheme.body1,
+                        )
+                      ]);
+                },
+              )
+            ]),
+      ),
     );
   }
 }

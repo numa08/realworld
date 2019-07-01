@@ -121,11 +121,6 @@ class _ArticleListView extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Hero(
-                                transitionOnUserGestures: true,
-                                placeholderBuilder: (context, child) => Opacity(
-                                      opacity: 0.2,
-                                      child: child,
-                                    ),
                                 tag: _heroTag(snapshot.data[index], index),
                                 child: Text(snapshot.data[index].title,
                                     style: Theme.of(context).textTheme.title),
