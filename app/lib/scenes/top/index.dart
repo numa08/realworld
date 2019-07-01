@@ -94,13 +94,14 @@ class _ArticleListView extends StatelessWidget {
             itemBuilder: (context, index) => GestureDetector(
                   onTap: () => Navigator.push<MaterialPageRoute>(
                       context,
-                      NoAnimationMaterialPageRoute(
+                      MaterialPageRoute(
                           builder: (_) => ArticleScene(),
                           settings: RouteSettings(
                               arguments: ArticleSceneArguments(
                                   heroTag:
                                       _heroTag(snapshot.data[index], index),
-                                  articleId: snapshot.data[index].id)))),
+                                  articleId: snapshot.data[index].id,
+                                  initialArticle: snapshot.data[index])))),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8),
@@ -120,6 +121,11 @@ class _ArticleListView extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Hero(
+                                transitionOnUserGestures: true,
+                                placeholderBuilder: (context, child) => Opacity(
+                                      opacity: 0.2,
+                                      child: child,
+                                    ),
                                 tag: _heroTag(snapshot.data[index], index),
                                 child: Text(snapshot.data[index].title,
                                     style: Theme.of(context).textTheme.title),

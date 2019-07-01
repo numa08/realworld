@@ -5,9 +5,14 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
 class ArticleSceneArguments {
-  ArticleSceneArguments({@required this.heroTag, @required this.articleId});
+  ArticleSceneArguments(
+      {@required this.heroTag,
+      @required this.articleId,
+      @required this.initialArticle});
   final String heroTag;
   final String articleId;
+  // We need this for Hero animation
+  final Article initialArticle;
 }
 
 class ArticleScene extends StatelessWidget {
@@ -28,6 +33,7 @@ class ArticleScene extends StatelessWidget {
           ),
           body: _Body(
             heroTag: heroTag,
+            initialArticle: arguments.initialArticle,
           ),
         );
       }),
@@ -36,15 +42,17 @@ class ArticleScene extends StatelessWidget {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({Key key, this.heroTag}) : super(key: key);
+  const _Body({Key key, this.heroTag, this.initialArticle}) : super(key: key);
 
   final String heroTag;
+  final Article initialArticle;
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ArticleBloc>(context);
     return StreamBuilder<Article>(
       stream: bloc.article,
+      initialData: initialArticle,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final data = snapshot.data;
